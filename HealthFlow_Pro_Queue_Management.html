@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HealthFlow Pro | Advanced Healthcare Queue Management</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#06141b;--panel:#102a34;--panel2:#0b2029;--line:#2b5662;--a:#55dfca;--muted:#a9c5cb;--danger:#ff7185;--warn:#ffd166}
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#061218,#0b2832,#061218);color:#f0fcfd;min-height:100vh}
+header{background:#091e26;border-bottom:1px solid var(--line);padding:15px 4%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-size:24px;font-weight:800;color:var(--a)}.logo span{color:#fff}
+nav button,.control{background:#203f49;border:0;color:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;margin-left:4px}
+nav button:hover,.control:hover{background:#315d68}
+.container,.page{width:92%;max-width:1350px;margin:auto}.hero{text-align:center;padding:45px 20px 25px}.hero h1{font-size:42px}.hero h1 span{color:var(--a)}.hero p{max-width:980px;margin:13px auto;color:var(--muted);line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:25px 0 40px}
+.card,.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px}.card{padding:22px;text-align:center;transition:.2s}.card:hover{border-color:var(--a);transform:translateY(-3px)}.icon{font-size:40px;margin-bottom:8px}.card p,.muted{color:var(--muted);line-height:1.55}
+.btn{background:var(--a);color:#061416;border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;margin-top:11px}.dangerBtn{background:var(--danger);color:#18080d}.warnBtn{background:var(--warn);color:#16120a}
+.stat{padding:17px}.stat h4{color:var(--a)}.stat p{font-size:27px;font-weight:bold;margin-top:7px}
+.page{display:none;background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:24px;margin-top:25px;margin-bottom:45px}.page.active{display:block}
+.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.title h2{color:var(--a)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:18px}.panel{padding:19px}.panel h3{color:var(--a);margin-bottom:12px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.field{display:flex;flex-direction:column;gap:7px}.field label{color:#c3dadd}.field input,.field select,.field textarea{background:#122e38;border:1px solid #3d6670;color:#fff;border-radius:8px;padding:10px}.field textarea{min-height:105px}.full{grid-column:1/-1}
+.table-wrap{overflow:auto;margin-top:16px}.table{width:100%;border-collapse:collapse;min-width:900px}.table th,.table td{padding:11px;border-bottom:1px solid #294b55;text-align:left}.table th{color:var(--a)}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#1e514b;color:#a6f5e9;font-size:12px}.badge.warn{background:#554718;color:#ffe39a}.badge.danger{background:#542630;color:#ffb0bb}
+.alert{padding:13px;background:#163943;border:1px solid #326b76;border-radius:9px;margin:11px 0;color:#d3eef1}.alert.danger{background:#44242d;border-color:#793c49}
+.progress{height:9px;background:#203c45;border-radius:9px;overflow:hidden;margin-top:7px}.progress div{height:100%;background:var(--a)}
+.metric{font-size:28px;font-weight:bold;margin:5px 0}.formula{font-family:Consolas,monospace;background:#07151c;border:1px solid #274953;border-radius:8px;padding:12px;color:#8deee0;line-height:1.65;white-space:pre-wrap}
+.matrix{display:grid;gap:4px;margin:10px 0}.matrix input{width:70px;text-align:center;background:#122e38;border:1px solid #3d6670;color:#fff;border-radius:6px;padding:8px}
+.logbox{max-height:210px;overflow:auto}.logitem{padding:8px;border-bottom:1px solid #294b55}
+canvas{background:#081a21;border:1px solid #294b55;border-radius:10px;width:100%;height:260px}
+footer{text-align:center;background:#061218;padding:24px;color:#829fa7;margin-top:30px}
+.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;z-index:30}.modal.show{display:flex}.modalbox{width:min(700px,94%);background:var(--panel);border:1px solid var(--a);border-radius:16px;padding:24px}
+@media(max-width:1050px){.cards,.grid{grid-template-columns:repeat(2,1fr)}.three{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
+@media(max-width:650px){nav{display:none}.cards,.grid,.form-grid{grid-template-columns:1fr}.hero h1{font-size:32px}}
+</style>
+</head>
+<body>
+
+<div id="app">
+<header>
+<div class="logo">🏥 HealthFlow <span>Pro</span></div>
+<nav>
+<button onclick="home()">Dashboard</button><button onclick="openPage('patients')">Patients</button><button onclick="openPage('queue')">Live Queue</button><button onclick="openPage('prob')">Probability</button><button onclick="openPage('linear')">Linear Algebra</button><button onclick="openPage('markov')">Markov Flow</button><button onclick="openPage('analytics')">Analytics</button>
+</nav>
+</header>
+
+<div id="home">
+<section class="hero">
+<h1>Advanced Healthcare <span>Queue Management</span></h1>
+<p>Intelligent patient-flow management using probabilistic methods, queueing theory, Markov chains and linear algebra for dynamic resource allocation.</p>
+</section>
+<div class="container">
+<div class="grid">
+<div class="stat"><h4>Total Patients</h4><p id="sPatients">0</p></div>
+<div class="stat"><h4>Waiting</h4><p id="sWaiting">0</p></div>
+<div class="stat"><h4>Avg Waiting Time</h4><p id="sWait">0 min</p></div>
+<div class="stat"><h4>Queue Utilization</h4><p id="sUtil">0%</p></div>
+<div class="stat"><h4>Doctors Available</h4><p id="sDoctors">6</p></div>
+<div class="stat"><h4>Nurses Available</h4><p id="sNurses">10</p></div>
+<div class="stat"><h4>Beds Available</h4><p id="sBeds">18</p></div>
+<div class="stat"><h4>Congestion Probability</h4><p id="sCong">0%</p></div>
+</div>
+
+<div class="cards">
+<div class="card"><div class="icon">👥</div><h2>Patients</h2><p>Register, edit, search and classify patients by urgency and department.</p><button class="btn" onclick="openPage('patients')">Manage Patients</button></div>
+<div class="card"><div class="icon">🚦</div><h2>Live Queue</h2><p>Dynamic priority queue with estimated service time and doctor assignment.</p><button class="btn" onclick="openPage('queue')">Open Queue</button></div>
+<div class="card"><div class="icon">📊</div><h2>Probability Lab</h2><p>Calculate Poisson arrivals, M/M/1 utilization and waiting-time estimates.</p><button class="btn" onclick="openPage('prob')">Run Models</button></div>
+<div class="card"><div class="icon">🧮</div><h2>Linear Algebra</h2><p>Use matrices and vectors to optimize hospital resource allocation.</p><button class="btn" onclick="openPage('linear')">Optimize</button></div>
+<div class="card"><div class="icon">🔄</div><h2>Markov Patient Flow</h2><p>Predict future patient distribution between hospital service states.</p><button class="btn" onclick="openPage('markov')">Predict Flow</button></div>
+<div class="card"><div class="icon">📈</div><h2>Analytics</h2><p>Visualize arrivals, queue length, waiting time and resource utilization.</p><button class="btn" onclick="openPage('analytics')">View Analytics</button></div>
+<div class="card"><div class="icon">⚙️</div><h2>Simulation</h2><p>Generate probabilistic patient arrivals and compare queue performance.</p><button class="btn" onclick="simulate()">Run Simulation</button></div>
+<div class="card"><div class="icon">📄</div><h2>Report</h2><p>Generate a printable academic summary of current mathematical results.</p><button class="btn" onclick="printReport()">Print Report</button></div>
+</div>
+
+<div class="two">
+<div class="panel"><h3>Current Hospital Intelligence</h3><div id="homeInsight" class="muted"></div></div>
+<div class="panel"><h3>System Architecture</h3><p class="muted">Patient arrival data → probabilistic prediction → priority queue → service-rate analysis → Markov flow prediction → matrix-based resource optimization → analytics.</p></div>
+</div>
+</div>
+</div>
+
+<section id="patients" class="page">
+<div class="title"><h2>👥 Patient Management</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<input id="patientSearch" style="width:100%;padding:11px;background:#122e38;border:1px solid #3d6670;color:#fff;border-radius:8px" placeholder="Search patients..." oninput="renderPatients()">
+<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Department</th><th>Urgency</th><th>Arrival</th><th>Service</th><th>Status</th><th>Action</th></tr></thead><tbody id="patientBody"></tbody></table></div>
+<button class="btn" onclick="show('patientModal')">＋ Register Patient</button>
+</section>
+
+<section id="queue" class="page">
+<div class="title"><h2>🚦 Live Healthcare Queue</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<div class="alert">The queue score combines urgency, waiting time and service requirements. Emergency patients receive higher priority while waiting-time escalation reduces starvation.</div>
+<div class="three">
+<div class="panel"><h3>Queue Length</h3><div class="metric" id="qLen">0</div><p class="muted">Patients waiting</p></div>
+<div class="panel"><h3>Predicted Wait</h3><div class="metric" id="qPred">0 min</div><p class="muted">Based on current service capacity</p></div>
+<div class="panel"><h3>Next Patient</h3><div class="metric" id="qNext">—</div><p class="muted">Highest priority</p></div>
+</div>
+<div class="table-wrap"><table class="table"><thead><tr><th>Queue #</th><th>Patient</th><th>Department</th><th>Urgency</th><th>Wait</th><th>Priority Score</th><th>Est. Service</th><th>Doctor</th><th>Status</th><th>Action</th></tr></thead><tbody id="queueBody"></tbody></table></div>
+<button class="btn" onclick="processNext()">▶ Serve Highest Priority</button>
+<button class="btn warnBtn" onclick="recalculateQueue()">↻ Recalculate Queue</button>
+<button class="btn" onclick="simulate()">🎲 Add Probabilistic Patients</button>
+</section>
+
+<section id="prob" class="page">
+<div class="title"><h2>📊 Probability & Queueing Laboratory</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<div class="two">
+<div class="panel">
+<h3>Poisson Arrival Probability</h3>
+<p class="muted">Calculate the probability of exactly k patient arrivals in a selected time interval.</p>
+<div class="form-grid" style="margin-top:12px"><div class="field"><label>λ Average arrivals</label><input id="lambda" type="number" value="12" step=".1"></div><div class="field"><label>k Arrivals</label><input id="k" type="number" value="15"></div></div>
+<button class="btn" onclick="poissonCalc()">Calculate P(X = k)</button>
+<div id="poissonOut" class="formula" style="margin-top:12px"></div>
+</div>
+<div class="panel">
+<h3>M/M/1 Queue Model</h3>
+<p class="muted">Estimate utilization, average queue length and waiting time from arrival and service rates.</p>
+<div class="form-grid" style="margin-top:12px"><div class="field"><label>λ Arrival rate / hour</label><input id="mmLambda" type="number" value="12" step=".1"></div><div class="field"><label>μ Service rate / hour</label><input id="mmMu" type="number" value="16" step=".1"></div></div>
+<button class="btn" onclick="mm1Calc()">Analyze Queue</button>
+<div id="mmOut" class="formula" style="margin-top:12px"></div>
+</div>
+</div>
+<div class="panel" style="margin-top:18px">
+<h3>Probability Interpretation</h3>
+<p class="muted">If utilization ρ approaches 1, demand is approaching service capacity. The system therefore flags possible congestion and can recommend additional staff or redistribution of patients.</p>
+<div id="probInsight" class="alert"></div>
+</div>
+</section>
+
+<section id="linear" class="page">
+<div class="title"><h2>🧮 Linear Algebra Resource Optimizer</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<div class="two">
+<div class="panel">
+<h3>Resource Availability Vector</h3>
+<p class="muted">Enter available doctors, nurses, beds and lab units.</p>
+<div class="form-grid" style="margin-top:12px">
+<div class="field"><label>Doctors</label><input id="rDoc" type="number" value="6"></div><div class="field"><label>Nurses</label><input id="rNurse" type="number" value="10"></div>
+<div class="field"><label>Beds</label><input id="rBed" type="number" value="18"></div><div class="field"><label>Lab Units</label><input id="rLab" type="number" value="4"></div>
+</div>
+<div class="formula" style="margin-top:12px">R = [ Doctors, Nurses, Beds, Lab Units ]ᵀ</div>
+</div>
+<div class="panel">
+<h3>Demand Vector</h3>
+<p class="muted">Estimated current resource demand from the active queue.</p>
+<div class="formula" id="demandVector"></div>
+<button class="btn" onclick="optimizeResources()">⚙ Optimize Allocation</button>
+</div>
+</div>
+<div class="panel" style="margin-top:18px">
+<h3>Allocation Matrix</h3>
+<p class="muted">A matrix represents resource requirements per patient-care category. Matrix-vector multiplication estimates total demand.</p>
+<div id="matrixInputs" class="matrix"></div>
+<div id="matrixResult" class="formula"></div>
+</div>
+<div class="two">
+<div class="panel"><h3>Optimization Recommendation</h3><div id="resourceRecommendation" class="alert">Run optimization to generate a recommendation.</div></div>
+<div class="panel"><h3>Linear Algebra Theory</h3><div class="formula">D = A × x
+
+A = resource requirement matrix
+x = patient/category demand vector
+D = estimated resource demand vector
+
+Available ≥ Demand → sufficient
+Available < Demand → reallocate / add capacity</div></div>
+</div>
+</section>
+
+<section id="markov" class="page">
+<div class="title"><h2>🔄 Markov Patient-Flow Predictor</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<div class="two">
+<div class="panel">
+<h3>Hospital States</h3>
+<p class="muted">R = Registration, T = Triage, C = Consultation, L = Laboratory, P = Pharmacy, D = Discharge.</p>
+<div class="formula">P =
+[0.00  0.90  0.10  0.00  0.00  0.00]
+[0.00  0.00  0.80  0.20  0.00  0.00]
+[0.00  0.00  0.10  0.25  0.45  0.20]
+[0.00  0.00  0.10  0.00  0.80  0.10]
+[0.00  0.00  0.00  0.00  0.00  1.00]
+[0.00  0.00  0.00  0.00  0.00  1.00]</div>
+<button class="btn" onclick="runMarkov()">▶ Predict Next State Distribution</button>
+</div>
+<div class="panel">
+<h3>Current State Vector</h3>
+<div class="form-grid">
+<div class="field"><label>Registration</label><input id="m0" type="number" value="10"></div>
+<div class="field"><label>Triage</label><input id="m1" type="number" value="8"></div>
+<div class="field"><label>Consultation</label><input id="m2" type="number" value="12"></div>
+<div class="field"><label>Laboratory</label><input id="m3" type="number" value="5"></div>
+<div class="field"><label>Pharmacy</label><input id="m4" type="number" value="3"></div>
+<div class="field"><label>Discharge</label><input id="m5" type="number" value="2"></div>
+</div>
+<div id="markovOut" class="formula" style="margin-top:12px"></div>
+</div>
+</div>
+</section>
+
+<section id="analytics" class="page">
+<div class="title"><h2>📈 Analytics & Simulation</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<div class="two">
+<div class="panel"><h3>Hourly Patient Arrivals</h3><canvas id="arrivalChart" width="700" height="260"></canvas></div>
+<div class="panel"><h3>Queue Length Trend</h3><canvas id="queueChart" width="700" height="260"></canvas></div>
+</div>
+<div class="two">
+<div class="panel"><h3>Department Distribution</h3><canvas id="deptChart" width="700" height="260"></canvas></div>
+<div class="panel"><h3>Resource Utilization</h3><canvas id="resourceChart" width="700" height="260"></canvas></div>
+</div>
+</section>
+
+<div class="container">
+<div class="panel"><h3>Recent System Activity</h3><div id="activity" class="logbox" style="margin-top:8px"></div></div>
+</div>
+<footer>HealthFlow Pro © 2026 | Probabilistic Methods + Linear Algebra + Markov Chains | Academic Demonstration</footer>
+</div>
+
+<div id="patientModal" class="modal"><div class="modalbox">
+<div class="title"><h2>Register Patient</h2><button class="control" onclick="hide('patientModal')">✕</button></div>
+<div class="form-grid">
+<div class="field"><label>Name</label><input id="pn"></div><div class="field"><label>Age</label><input id="pa" type="number" value="30"></div>
+<div class="field"><label>Department</label><select id="pd"><option>Emergency</option><option>General OPD</option><option>Laboratory</option><option>Pharmacy</option><option>Cardiology</option><option>Neurology</option></select></div>
+<div class="field"><label>Urgency</label><select id="pu"><option>Emergency</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+<div class="field"><label>Estimated Service (minutes)</label><input id="ps" type="number" value="15"></div>
+</div>
+<button class="btn" onclick="addPatient()">Save Patient</button>
+</div></div>
+
+<script>
+const KEY="healthflow_pro_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||"null")||{
+patients:[
+{id:"HF-1001",name:"Arun Kumar",age:42,dept:"Cardiology",urgency:"High",arrival:Date.now()-32*60000,service:20,status:"Waiting"},
+{id:"HF-1002",name:"Priya Sharma",age:35,dept:"General OPD",urgency:"Medium",arrival:Date.now()-24*60000,service:15,status:"Waiting"},
+{id:"HF-1003",name:"Rahul Das",age:28,dept:"Laboratory",urgency:"Low",arrival:Date.now()-12*60000,service:10,status:"Waiting"},
+{id:"HF-1004",name:"Meena Ravi",age:63,dept:"Emergency",urgency:"Emergency",arrival:Date.now()-8*60000,service:25,status:"Waiting"},
+{id:"HF-1005",name:"Vijay Kumar",age:51,dept:"General OPD",urgency:"High",arrival:Date.now()-42*60000,service:18,status:"Waiting"}
+],
+activity:[],arrivals:[8,11,13,10,15,12,17,14,18,16,19,15],queues:[4,7,9,8,12,10,15,13,17,14,18,16]
+};
+const urgencyWeight={Emergency:100,High:70,Medium:40,Low:20};
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function now(){return new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
+function log(msg){data.activity.unshift({t:now(),m:msg});data.activity=data.activity.slice(0,30);save();renderActivity()}
+function home(){document.getElementById("home").style.display="block";document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));refresh()}
+function openPage(id){document.getElementById("home").style.display="none";document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");refresh();if(id==="patients")renderPatients();if(id==="queue")renderQueue();if(id==="linear")setupMatrix();if(id==="analytics")drawCharts();if(id==="prob"){poissonCalc();mm1Calc()}if(id==="markov")runMarkov();log("Opened "+id+" module")}
+function show(id){document.getElementById(id).classList.add("show")}function hide(id){document.getElementById(id).classList.remove("show")}
+function waitMin(p){return Math.max(0,Math.round((Date.now()-p.arrival)/60000))}
+function score(p){return urgencyWeight[p.urgency]+Math.min(waitMin(p)*1.5,45)+(p.dept==="Emergency"?20:0)}
+function refresh(){
+let waiting=data.patients.filter(p=>p.status==="Waiting");
+document.getElementById("sPatients").textContent=data.patients.length;
+document.getElementById("sWaiting").textContent=waiting.length;
+let avg=waiting.length?Math.round(waiting.reduce((a,p)=>a+waitMin(p),0)/waiting.length):0;
+document.getElementById("sWait").textContent=avg+" min";
+let lambda=waiting.length?Math.min(24,8+waiting.length*.65):8,mu=16;
+let rho=Math.min(.99,lambda/mu);
+document.getElementById("sUtil").textContent=Math.round(rho*100)+"%";
+let congestion=Math.max(0,Math.min(99,Math.round((rho-.65)*250)));
+document.getElementById("sCong").textContent=congestion+"%";
+document.getElementById("homeInsight").innerHTML=`Current queue has <b>${waiting.length}</b> waiting patients. Estimated utilization is <b>${Math.round(rho*100)}%</b>. `+(rho>.85?`<span style="color:var(--danger)">High congestion risk detected.</span>`:`Capacity is currently within a manageable range.`);
+document.getElementById("qLen").textContent=waiting.length;
+document.getElementById("qPred").textContent=Math.round(avg+waiting.length*1.5)+" min";
+let sorted=[...waiting].sort((a,b)=>score(b)-score(a));document.getElementById("qNext").textContent=sorted[0]?.name||"—";
+document.getElementById("demandVector").textContent=`D = [ ${Math.ceil(waiting.length*.18)}, ${Math.ceil(waiting.length*.32)}, ${Math.ceil(waiting.length*.12)}, ${Math.ceil(waiting.length*.10)} ]ᵀ`;
+renderActivity();drawCharts()
+}
+function renderPatients(){
+let q=(document.getElementById("patientSearch")?.value||"").toLowerCase();
+let rows=data.patients.filter(p=>Object.values(p).join(" ").toLowerCase().includes(q));
+document.getElementById("patientBody").innerHTML=rows.map(p=>`<tr><td>${p.id}</td><td>${p.name}</td><td>${p.age}</td><td>${p.dept}</td><td><span class="badge ${p.urgency==="Emergency"?"danger":p.urgency==="High"?"warn":""}">${p.urgency}</span></td><td>${new Date(p.arrival).toLocaleTimeString()}</td><td>${p.service} min</td><td>${p.status}</td><td><button class="control" onclick="editPatient('${p.id}')">Edit</button> <button class="control" onclick="deletePatient('${p.id}')">Delete</button></td></tr>`).join("")
+}
+function addPatient(){
+let name=document.getElementById("pn").value.trim();if(!name)return alert("Enter patient name.");
+let p={id:"HF-"+(1001+data.patients.length),name,age:+document.getElementById("pa").value||0,dept:document.getElementById("pd").value,urgency:document.getElementById("pu").value,arrival:Date.now(),service:+document.getElementById("ps").value||15,status:"Waiting"};
+data.patients.push(p);log("Registered patient "+p.id+" ("+p.urgency+")");hide("patientModal");renderPatients();refresh()
+}
+function editPatient(id){
+let p=data.patients.find(x=>x.id===id);let n=prompt("Edit patient name:",p.name);if(n!==null&&n.trim()){p.name=n.trim();save();log("Edited "+id);renderPatients();refresh()}
+}
+function deletePatient(id){if(!confirm("Delete this patient?"))return;data.patients=data.patients.filter(p=>p.id!==id);log("Deleted "+id);renderPatients();refresh()}
+function recalculateQueue(){renderQueue();log("Priority queue recalculated")}
+function renderQueue(){
+let arr=data.patients.filter(p=>p.status==="Waiting").sort((a,b)=>score(b)-score(a));
+document.getElementById("queueBody").innerHTML=arr.map((p,i)=>`<tr><td>Q-${String(i+1).padStart(3,"0")}</td><td>${p.name}</td><td>${p.dept}</td><td><span class="badge ${p.urgency==="Emergency"?"danger":p.urgency==="High"?"warn":""}">${p.urgency}</span></td><td>${waitMin(p)} min</td><td>${score(p).toFixed(1)}</td><td>${p.service} min</td><td>Dr. ${["Rao","Mehta","Kumar","Iyer"][i%4]}</td><td>${p.status}</td><td><button class="control" onclick="serve('${p.id}')">Serve</button></td></tr>`).join("")||'<tr><td colspan="10">Queue is empty.</td></tr>'
+}
+function serve(id){let p=data.patients.find(x=>x.id===id);if(!p)return;p.status="Served";log("Served "+p.name+" from "+p.dept);refresh();renderQueue();renderPatients()}
+function processNext(){let p=data.patients.filter(x=>x.status==="Waiting").sort((a,b)=>score(b)-score(a))[0];if(!p)return alert("Queue is empty.");serve(p.id);alert(p.name+" is now assigned for service.")}
+function poisson(l,k){if(l<0||k<0)return 0;let term=Math.exp(-l),sum=1;for(let i=1;i<=k;i++){term*=l/i;sum*=1}return term*Math.pow(l,k)/factorial(k)}
+function factorial(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r}
+function poissonCalc(){
+let l=Math.max(0,+document.getElementById("lambda").value),k=Math.max(0,Math.floor(+document.getElementById("k").value)),p=poisson(l,k);
+document.getElementById("poissonOut").textContent=`P(X=${k}) = e^(-λ) λ^k / k!\n\nλ = ${l}\nk = ${k}\n\nProbability = ${(p*100).toFixed(4)}%\nDecimal = ${p.toFixed(6)}`;
+document.getElementById("probInsight").textContent=p>.15?"The selected arrival count has a relatively high probability; consider preparing additional capacity.":"The selected arrival count has a lower probability under the current λ."
+}
+function mm1Calc(){
+let l=Math.max(0,+document.getElementById("mmLambda").value),m=Math.max(.01,+document.getElementById("mmMu").value);
+if(l>=m){document.getElementById("mmOut").textContent="ρ = λ/μ = "+(l/m).toFixed(3)+"\n\nUNSTABLE QUEUE: λ ≥ μ\nService capacity is insufficient for the arrival rate.";return}
+let rho=l/m,Lq=rho*rho/(1-rho),L=l/(m-l),Wq=Lq/l,W=1/(m-l);
+document.getElementById("mmOut").textContent=`ρ = λ / μ = ${rho.toFixed(4)}\nLq = ρ² / (1-ρ) = ${Lq.toFixed(3)} patients\nL  = λ / (μ-λ) = ${L.toFixed(3)} patients\nWq = Lq / λ = ${(Wq*60).toFixed(2)} minutes\nW  = 1 / (μ-λ) = ${(W*60).toFixed(2)} minutes`;
+}
+function setupMatrix(){
+let wrap=document.getElementById("matrixInputs");wrap.innerHTML="";
+let A=[[.18,.05,.02,.01],[.32,.22,.08,.03],[.12,.15,.20,.02],[.10,.08,.15,.25]];
+A.forEach((row,i)=>{let line=document.createElement("div");row.forEach((v,j)=>{let inp=document.createElement("input");inp.type="number";inp.step=".01";inp.value=v;inp.id=`a${i}${j}`;line.appendChild(inp)});wrap.appendChild(line)});
+}
+function optimizeResources(){
+let waiting=data.patients.filter(p=>p.status==="Waiting"),x=[Math.max(1,waiting.filter(p=>p.urgency==="Emergency").length),Math.max(1,waiting.filter(p=>p.dept==="General OPD").length),Math.max(1,waiting.filter(p=>p.dept==="Cardiology"||p.dept==="Neurology").length),Math.max(1,waiting.filter(p=>p.dept==="Laboratory").length)];
+let A=[];for(let i=0;i<4;i++){A[i]=[];for(let j=0;j<4;j++)A[i][j]=+document.getElementById(`a${i}${j}`).value||0}
+let D=A.map(r=>r.reduce((s,v,j)=>s+v*x[j],0)),avail=[+rDoc.value,+rNurse.value,+rBed.value,+rLab.value];
+document.getElementById("matrixResult").textContent=`Patient demand vector x = [${x.join(", ")}]ᵀ\n\nD = A × x\n\nEstimated demand D = [${D.map(v=>v.toFixed(2)).join(", ")}]ᵀ\n\nAvailable R = [${avail.join(", ")}]ᵀ`;
+let names=["Doctors","Nurses","Beds","Lab Units"],issues=D.map((v,i)=>v>avail[i]?`${names[i]} deficit ≈ ${(v-avail[i]).toFixed(1)}`:null).filter(Boolean);
+document.getElementById("resourceRecommendation").textContent=issues.length?"⚠ "+issues.join(" | ")+" . Reallocate staff/capacity to the affected service.":"✓ Current resources exceed estimated matrix demand. Allocation is sufficient.";
+log("Ran matrix-based resource optimization")
+}
+function runMarkov(){
+let P=[[0,.9,.1,0,0,0],[0,0,.8,.2,0,0],[0,0,.1,.25,.45,.2],[0,0,.1,0,.8,.1],[0,0,0,0,0,1],[0,0,0,0,0,1]];
+let v=[0,1,2,3,4,5].map(i=>+document.getElementById("m"+i).value||0),out=P[0].map((_,j)=>v.reduce((s,vi,i)=>s+vi*P[i][j],0));
+let states=["Registration","Triage","Consultation","Laboratory","Pharmacy","Discharge"];
+document.getElementById("markovOut").textContent="vₙ = ["+v.map(x=>x.toFixed(2)).join(", ")+"]\n\nvₙ₊₁ = vₙP\n\nPredicted next distribution:\n"+states.map((s,i)=>s+": "+out[i].toFixed(2)).join("\n");
+log("Calculated Markov patient-flow prediction")
+}
+function simulate(){
+let l=12,arr=0;for(let i=0;i<Math.round(l);i++)if(Math.random()<.85)arr++;
+for(let i=0;i<arr;i++){let urg=Math.random()<.1?"Emergency":Math.random()<.3?"High":Math.random()<.65?"Medium":"Low";let deps=["General OPD","Emergency","Cardiology","Laboratory","Neurology"];data.patients.push({id:"HF-"+(1001+data.patients.length),name:"Simulated Patient "+(data.patients.length+1),age:20+Math.floor(Math.random()*65),dept:deps[Math.floor(Math.random()*deps.length)],urgency:urg,arrival:Date.now(),service:8+Math.floor(Math.random()*24),status:"Waiting"})}
+data.arrivals.push(arr);data.arrivals=data.arrivals.slice(-12);data.queues.push(data.patients.filter(p=>p.status==="Waiting").length);data.queues=data.queues.slice(-12);log("Simulation generated "+arr+" probabilistic arrivals");refresh();renderQueue();alert("Simulation added "+arr+" patients to the queue.")}
+function renderActivity(){let d=document.getElementById("activity");if(!d)return;d.innerHTML=data.activity.map(x=>`<div class="logitem"><span class="muted">${x.t}</span> — ${x.m}</div>`).join("")||"No activity yet."}
+function drawLine(canvas,vals,title){
+let c=canvas.getContext("2d"),w=canvas.width,h=canvas.height;c.clearRect(0,0,w,h);c.font="14px Arial";c.fillText(title,15,22);
+let max=Math.max(...vals,1),pad=35;c.beginPath();vals.forEach((v,i)=>{let x=pad+i*(w-pad*2)/(vals.length-1||1),y=h-pad-v/max*(h-pad*2);i?c.lineTo(x,y):c.moveTo(x,y)});c.stroke();
+vals.forEach((v,i)=>{let x=pad+i*(w-pad*2)/(vals.length-1||1),y=h-pad-v/max*(h-pad*2);c.beginPath();c.arc(x,y,3,0,Math.PI*2);c.fill();c.font="11px Arial";c.fillText(v,x-6,y-8)})
+}
+function drawBars(canvas,labels,vals,title){
+let c=canvas.getContext("2d"),w=canvas.width,h=canvas.height;c.clearRect(0,0,w,h);c.font="14px Arial";c.fillText(title,15,22);let max=Math.max(...vals,1),bw=(w-70)/vals.length*.65;
+vals.forEach((v,i)=>{let x=35+i*(w-50)/vals.length,y=h-35-v/max*(h-75);c.fillRect(x,y,bw,h-35-y);c.font="11px Arial";c.fillText(labels[i],x,h-15);c.fillText(String(v),x,y-5)})
+}
+function drawCharts(){
+if(!document.getElementById("arrivalChart"))return;
+drawLine(document.getElementById("arrivalChart"),data.arrivals,"Arrivals / Hour");
+drawLine(document.getElementById("queueChart"),data.queues,"Queue Length");
+let de=["Emergency","General OPD","Cardiology","Laboratory","Neurology"],dv=de.map(x=>data.patients.filter(p=>p.dept===x).length);drawBars(document.getElementById("deptChart"),de,dv,"Patients by Department");
+drawBars(document.getElementById("resourceChart"),["Doctors","Nurses","Beds","Lab"],[6,10,18,4],"Available Resources");
+}
+function printReport(){window.print()}
+setupMatrix();renderActivity();refresh();
+setInterval(()=>{refresh();if(document.getElementById("queue").classList.contains("active"))renderQueue()},30000);
+</script>
+</body>
+</html>

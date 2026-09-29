@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PuzzleSolver Pro - Step by Step</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#080b18,#111936,#080b18);color:#fff;min-height:100vh}
+header{background:#10172f;padding:18px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #303b65;position:sticky;top:0;z-index:10}
+.logo{font-size:25px;font-weight:bold;color:#55d9ff}.logo span{color:#fff}
+nav button{background:none;border:0;color:#cbd4f5;margin-left:18px;cursor:pointer;font-size:15px}
+nav button:hover{color:#55d9ff}
+.hero{text-align:center;padding:55px 20px 35px}.hero h1{font-size:44px;margin-bottom:15px}.hero h1 span{color:#55d9ff}
+.hero p{max-width:850px;margin:auto;color:#aeb9d8;line-height:1.7}
+.container{width:92%;max-width:1250px;margin:auto}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:50px}
+.card,.panel{background:#151d3a;border:1px solid #303b65;border-radius:18px}
+.card{padding:28px;text-align:center}.card:hover{border-color:#55d9ff;transform:translateY(-4px)}
+.icon{font-size:52px;margin-bottom:12px}.card h2{margin-bottom:12px}.card p{color:#aeb9d8;line-height:1.6;min-height:75px}
+.btn,.control{border:0;border-radius:8px;padding:11px 19px;cursor:pointer;font-weight:bold}
+.btn{background:#55d9ff;color:#07101d;margin-top:14px}.control{background:#293353;color:#fff;margin:4px}.control:hover,.back:hover{background:#3c4b79}
+.section{margin:35px 0 55px}.section h2{text-align:center;margin-bottom:20px}
+.info{padding:25px;line-height:1.8;color:#c7d0eb}.info strong{color:#55d9ff}
+.solver{display:none;width:92%;max-width:1250px;margin:35px auto;padding:25px;background:#111831;border:1px solid #303b65;border-radius:18px}.solver.active{display:block}
+.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.title h2{color:#55d9ff}
+.back{background:#293353;color:#fff;border:0;padding:10px 17px;border-radius:7px;cursor:pointer}
+.layout{display:grid;grid-template-columns:auto 360px;gap:28px;align-items:start}
+.board-wrap{text-align:center}.board-wrap h3{margin-bottom:15px}
+.sudoku{display:grid;grid-template-columns:repeat(9,45px);grid-template-rows:repeat(9,45px);border:3px solid #fff;margin:auto}
+.sudoku input{width:45px;height:45px;background:#1c2648;color:#fff;border:1px solid #495578;text-align:center;font-size:18px;outline:0}
+.sudoku input:focus{background:#31416e}.sudoku input:nth-child(3n){border-right:2px solid #fff}.sudoku input:nth-child(9n){border-right:0}
+.sudoku input:nth-child(n+19):nth-child(-n+27),.sudoku input:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid #fff}
+.active-cell{background:#6a4f1f!important;box-shadow:inset 0 0 0 2px #ffd75a}
+.new-cell{background:#245b52!important}
+.back-cell{background:#702f42!important}
+.side{padding:20px}.side h3{color:#55d9ff;margin-bottom:10px}.side p{color:#aeb9d8;line-height:1.7}
+.stepbox{background:#0c1227;border:1px solid #303b65;border-radius:12px;padding:15px;margin-top:18px;min-height:150px}
+.stepbox h4{color:#55d9ff;margin-bottom:8px}.stepbox p{color:#d8def0}
+.progress{height:8px;background:#252e4d;border-radius:5px;margin:15px 0;overflow:hidden}.progress div{height:100%;background:#55d9ff;width:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}.stat{background:#151d3a;border:1px solid #303b65;border-radius:10px;padding:15px;text-align:center}.stat h4{color:#55d9ff}.stat p{font-size:21px;font-weight:bold;margin-top:5px}
+.log{background:#080d1d;border:1px solid #303b65;border-radius:10px;padding:12px;height:220px;overflow:auto;margin-top:15px;color:#cbd4f5;font-size:14px;line-height:1.6}.log div{border-bottom:1px solid #202945;padding:4px}
+.chessboard{display:grid;width:min(70vw,500px);aspect-ratio:1;margin:15px auto;border:4px solid #fff}.chess{display:flex;align-items:center;justify-content:center;font-size:clamp(25px,6vw,45px)}.light{background:#d9e1ed;color:#111}.dark{background:#53627e;color:#fff}
+select{background:#1c2648;color:#fff;border:1px solid #495578;padding:10px;border-radius:7px}
+.crossword{display:grid;grid-template-columns:repeat(5,55px);justify-content:center;margin:20px auto}.crossword input{width:55px;height:55px;border:1px solid #596584;text-align:center;font-size:22px;text-transform:uppercase}.cross-new{background:#b9f3e9!important}.cross-active{background:#ffe08a!important}
+footer{text-align:center;background:#070b16;padding:28px;margin-top:55px;color:#8792b3}
+@media(max-width:900px){.cards{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:35px}}
+@media(max-width:500px){nav{display:none}.sudoku{grid-template-columns:repeat(9,32px);grid-template-rows:repeat(9,32px)}.sudoku input{width:32px;height:32px;font-size:14px}.stats{grid-template-columns:1fr}.crossword{grid-template-columns:repeat(5,43px)}.crossword input{width:43px;height:43px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🧠 PuzzleSolver <span>Pro</span></div>
+  <nav>
+    <button onclick="home()">Home</button>
+    <button onclick="openPuzzle('sudoku')">Sudoku</button>
+    <button onclick="openPuzzle('queens')">N-Queens</button>
+    <button onclick="openPuzzle('crossword')">Crossword</button>
+  </nav>
+</header>
+
+<div id="homePage">
+  <section class="hero">
+    <h1>PuzzleSolver <span>Pro</span></h1>
+    <p>A unified framework using Constraint Satisfaction, Constraint Propagation and Backtracking. Every puzzle can now be solved <b>step by step</b> or <b>totally at once</b>.</p>
+  </section>
+  <div class="container">
+    <div class="cards">
+      <div class="card"><div class="icon">🧩</div><h2>Sudoku</h2><p>Watch every candidate, placement and backtrack.</p><button class="btn" onclick="openPuzzle('sudoku')">Open Sudoku</button></div>
+      <div class="card"><div class="icon">♛</div><h2>N-Queens</h2><p>Watch queens being placed, rejected and backtracked.</p><button class="btn" onclick="openPuzzle('queens')">Open N-Queens</button></div>
+      <div class="card"><div class="icon">🔤</div><h2>Crossword</h2><p>Watch word domains and crossing constraints step by step.</p><button class="btn" onclick="openPuzzle('crossword')">Open Crossword</button></div>
+    </div>
+    <section class="section">
+      <h2>How the Framework Works</h2>
+      <div class="info">
+        <strong>Step 1 - CSP:</strong> Represent the puzzle using variables, domains and constraints.<br><br>
+        <strong>Step 2 - Constraint Propagation:</strong> Remove values that cannot satisfy the current constraints.<br><br>
+        <strong>Step 3 - Backtracking:</strong> Make a choice. If it fails, undo it and return to the previous choice.<br><br>
+        <strong>Step 4 - Search Space:</strong> The invalid choices are removed so the remaining search space becomes smaller.<br><br>
+        <strong>Step 5 - Visualization:</strong> The website shows the complete solving process, one action at a time.
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- SUDOKU -->
+<section id="sudoku" class="solver">
+<div class="title"><h2>🧩 Sudoku - Step-by-Step Solver</h2><button class="back" onclick="home()">← Home</button></div>
+<div class="layout">
+  <div class="board-wrap">
+    <h3 id="sudokuStatus">Ready</h3>
+    <div id="sudokuBoard" class="sudoku"></div>
+    <div>
+      <button class="control" onclick="prepareSudoku()">🔄 Reset</button>
+      <button class="control" onclick="sudokuStep()">▶ Next Step</button>
+      <button class="control" onclick="sudokuAll()">⚡ Solve All</button>
+      <button class="control" onclick="generateSudoku()">🎲 New Puzzle</button>
+    </div>
+  </div>
+  <div class="side">
+    <h3>Current Step</h3>
+    <div class="stepbox"><h4 id="sudokuStepTitle">Step 0</h4><p id="sudokuMessage">Press "Next Step" to start the algorithm.</p></div>
+    <div class="progress"><div id="sudokuProgress"></div></div>
+    <div class="log" id="sudokuLog"></div>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><h4>Total Steps</h4><p id="sTotal">0</p></div>
+  <div class="stat"><h4>Current Step</h4><p id="sCurrent">0</p></div>
+  <div class="stat"><h4>Backtracks</h4><p id="sBack">0</p></div>
+  <div class="stat"><h4>Checks</h4><p id="sChecks">0</p></div>
+</div>
+</section>
+
+<!-- QUEENS -->
+<section id="queens" class="solver">
+<div class="title"><h2>♛ N-Queens - Step-by-Step Solver</h2><button class="back" onclick="home()">← Home</button></div>
+<div class="board-wrap">
+  <label>Board Size: </label>
+  <select id="queenN" onchange="prepareQueens()">
+    <option>4</option><option>5</option><option>6</option><option selected>8</option><option>9</option><option>10</option>
+  </select>
+  <div id="chessboard" class="chessboard"></div>
+  <button class="control" onclick="prepareQueens()">🔄 Reset</button>
+  <button class="control" onclick="queenStep()">▶ Next Step</button>
+  <button class="control" onclick="queenAll()">⚡ Solve All</button>
+</div>
+<div class="stepbox"><h4 id="queenStepTitle">Step 0</h4><p id="queenMessage">Press "Next Step" to start.</p></div>
+<div class="progress"><div id="queenProgress"></div></div>
+<div class="log" id="queenLog"></div>
+<div class="stats">
+  <div class="stat"><h4>Total Steps</h4><p id="qTotal">0</p></div>
+  <div class="stat"><h4>Current Step</h4><p id="qCurrent">0</p></div>
+  <div class="stat"><h4>Backtracks</h4><p id="qBack">0</p></div>
+  <div class="stat"><h4>Conflicts</h4><p id="qChecks">0</p></div>
+</div>
+</section>
+
+<!-- CROSSWORD -->
+<section id="crossword" class="solver">
+<div class="title"><h2>🔤 Crossword - Step-by-Step CSP Solver</h2><button class="back" onclick="home()">← Home</button></div>
+<div class="info">
+  <strong>Demo CSP:</strong> The rows are variables. Each row has a domain of candidate words. A word is accepted only when it is compatible with the letters already fixed by crossing constraints.
+</div>
+<div id="crossBoard" class="crossword"></div>
+<div class="controls">
+  <button class="control" onclick="prepareCrossword()">🔄 Reset</button>
+  <button class="control" onclick="crossStep()">▶ Next Step</button>
+  <button class="control" onclick="crossAll()">⚡ Solve All</button>
+</div>
+<div class="stepbox"><h4 id="crossStepTitle">Step 0</h4><p id="crossMessage">Press "Next Step" to start.</p></div>
+<div class="progress"><div id="crossProgress"></div></div>
+<div class="log" id="crossLog"></div>
+<div class="stats">
+  <div class="stat"><h4>Total Steps</h4><p id="cTotal">0</p></div>
+  <div class="stat"><h4>Current Step</h4><p id="cCurrent">0</p></div>
+  <div class="stat"><h4>Backtracks</h4><p id="cBack">0</p></div>
+  <div class="stat"><h4>Checks</h4><p id="cChecks">0</p></div>
+</div>
+</section>
+
+<footer>PuzzleSolver Pro © 2026 | Backtracking + Constraint Propagation + Step-by-Step Visualization</footer>
+
+<script>
+/* ================= GENERAL ================= */
+function home(){
+  document.getElementById("homePage").style.display="block";
+  document.querySelectorAll(".solver").forEach(x=>x.classList.remove("active"));
+}
+function openPuzzle(type){
+  document.getElementById("homePage").style.display="none";
+  document.querySelectorAll(".solver").forEach(x=>x.classList.remove("active"));
+  document.getElementById(type).classList.add("active");
+  if(type==="sudoku") prepareSudoku();
+  if(type==="queens") prepareQueens();
+  if(type==="crossword") prepareCrossword();
+}
+function addLog(id,text){
+  const box=document.getElementById(id);
+  box.innerHTML += "<div>"+text+"</div>";
+  box.scrollTop=box.scrollHeight;
+}
+
+/* ================= SUDOKU ================= */
+const sudokuStart=[
+[5,3,0,0,7,0,0,0,0],
+[6,0,0,1,9,5,0,0,0],
+[0,9,8,0,0,0,0,6,0],
+[8,0,0,0,6,0,0,0,3],
+[4,0,0,8,0,3,0,0,1],
+[7,0,0,0,2,0,0,0,6],
+[0,6,0,0,0,0,2,8,0],
+[0,0,0,4,1,9,0,0,5],
+[0,0,0,0,8,0,0,7,9]
+];
+let sGrid,sTrace=[],sPos=0,sBack=0,sChecks=0;
+
+function clone(a){return a.map(r=>[...r])}
+function sudokuValid(g,r,c,n){
+  sChecks++;
+  for(let i=0;i<9;i++) if(g[r][i]===n||g[i][c]===n)return false;
+  let rr=Math.floor(r/3)*3,cc=Math.floor(c/3)*3;
+  for(let i=rr;i<rr+3;i++)for(let j=cc;j<cc+3;j++)if(g[i][j]===n)return false;
+  return true;
+}
+function sudokuBest(g){
+  let best=null;
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(g[r][c]===0){
+    let cand=[];
+    for(let n=1;n<=9;n++)if(sudokuValid(g,r,c,n))cand.push(n);
+    if(!cand.length)return {r,c,cand:[]};
+    if(!best||cand.length<best.cand.length)best={r,c,cand};
+  }
+  return best;
+}
+function buildSudokuTrace(){
+  sTrace=[]; let g=clone(sGrid);
+  function bt(){
+    let cell=sudokuBest(g);
+    if(!cell){sTrace.push({type:"done",msg:"All cells are filled. Sudoku solution found."});return true}
+    if(!cell.cand.length){sTrace.push({type:"back",r:cell.r,c:cell.c,msg:"No valid candidate. Backtrack from this cell."});return false}
+    for(let n of cell.cand){
+      sTrace.push({type:"try",r:cell.r,c:cell.c,n,msg:`Try ${n} at row ${cell.r+1}, column ${cell.c+1}. Candidates after propagation: ${cell.cand.join(", ")}`});
+      g[cell.r][cell.c]=n;
+      if(bt())return true;
+      g[cell.r][cell.c]=0;
+      sTrace.push({type:"back",r:cell.r,c:cell.c,n,msg:`${n} causes a dead end. Undo it and backtrack.`});
+    }
+    return false;
+  }
+  bt();
+}
+function drawSudoku(){
+  const b=document.getElementById("sudokuBoard");b.innerHTML="";
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+    let x=document.createElement("input");x.value=sGrid[r][c]||"";x.readOnly=true;x.id=`s-${r}-${c}`;b.appendChild(x);
+  }
+}
+function prepareSudoku(){
+  sGrid=clone(sudokuStart);sTrace=[];sPos=0;sBack=0;sChecks=0;buildSudokuTrace();drawSudoku();
+  document.getElementById("sTotal").textContent=sTrace.length;document.getElementById("sCurrent").textContent=0;document.getElementById("sBack").textContent=0;document.getElementById("sChecks").textContent=0;
+  document.getElementById("sudokuStepTitle").textContent="Step 0";document.getElementById("sudokuMessage").textContent="Ready. Press Next Step.";document.getElementById("sudokuStatus").textContent="Ready";document.getElementById("sudokuLog").innerHTML="";document.getElementById("sudokuProgress").style.width="0%";
+}
+function applySudokuStep(a){
+  document.querySelectorAll("#sudokuBoard input").forEach(x=>x.classList.remove("active-cell","new-cell","back-cell"));
+  if(a.type==="try"){sGrid[a.r][a.c]=a.n;document.getElementById(`s-${a.r}-${a.c}`).classList.add("new-cell","active-cell")}
+  if(a.type==="back"){if(a.r!==undefined)sGrid[a.r][a.c]=0;document.getElementById(`s-${a.r}-${a.c}`).classList.add("back-cell")}
+  drawSudoku();
+  if(a.r!==undefined)document.getElementById(`s-${a.r}-${a.c}`).classList.add(a.type==="back"?"back-cell":"new-cell","active-cell");
+  if(a.type==="back")sBack++;
+  document.getElementById("sudokuStepTitle").textContent=`Step ${sPos}`;
+  document.getElementById("sudokuMessage").textContent=a.msg;
+  document.getElementById("sCurrent").textContent=sPos;
+  document.getElementById("sBack").textContent=sBack;
+  document.getElementById("sChecks").textContent=sChecks;
+  document.getElementById("sudokuProgress").style.width=(sPos/sTrace.length*100)+"%";
+  addLog("sudokuLog",`<b>Step ${sPos}:</b> ${a.msg}`);
+  if(a.type==="done")document.getElementById("sudokuStatus").textContent="Solved";
+}
+function sudokuStep(){if(sPos>=sTrace.length)return; sPos++;applySudokuStep(sTrace[sPos-1])}
+function sudokuAll(){while(sPos<sTrace.length)sudokuStep()}
+function generateSudoku(){
+  prepareSudoku();
+  let cells=[];for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(sGrid[r][c])cells.push([r,c]);
+  cells.sort(()=>Math.random()-.5);
+  for(let i=0;i<18;i++){let [r,c]=cells[i];sGrid[r][c]=0}
+  sTrace=[];sPos=0;sBack=0;sChecks=0;buildSudokuTrace();drawSudoku();
+  document.getElementById("sTotal").textContent=sTrace.length;document.getElementById("sudokuMessage").textContent="New puzzle generated.";
+}
+
+/* ================= N QUEENS ================= */
+let qTrace=[],qPos=0,qBack=0,qChecks=0,qBoard=[];
+function queenSafe(board,row,col){
+  qChecks++;
+  for(let r=0;r<row;r++)if(board[r]===col||Math.abs(board[r]-col)===Math.abs(r-row))return false;
+  return true;
+}
+function buildQueenTrace(){
+  qTrace=[];let n=+document.getElementById("queenN").value;let b=Array(n).fill(-1);
+  function bt(row){
+    if(row===n){qTrace.push({type:"done",msg:`All ${n} queens placed. Solution found.`});return true}
+    for(let c=0;c<n;c++){
+      qTrace.push({type:"try",r:row,c,msg:`Try placing queen at row ${row+1}, column ${c+1}. Check row, column and diagonals.`});
+      if(queenSafe(b,row,c)){b[row]=c;if(bt(row+1))return true;b[row]=-1;qTrace.push({type:"back",r:row,c,msg:`Dead end after this choice. Remove the queen and backtrack.`})}
+      else qTrace.push({type:"reject",r:row,c,msg:`Conflict detected. This position violates a column or diagonal constraint.`});
+    }
+    return false;
+  }
+  bt(0);
+}
+function drawQueens(){
+  let n=+document.getElementById("queenN").value,b=document.getElementById("chessboard");b.innerHTML="";b.style.gridTemplateColumns=`repeat(${n},1fr)`;
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++){let x=document.createElement("div");x.className="chess "+((r+c)%2?"dark":"light");x.id=`q-${r}-${c}`;if(qBoard[r]===c)x.textContent="♛";b.appendChild(x)}
+}
+function prepareQueens(){
+  qTrace=[];qPos=0;qBack=0;qChecks=0;qBoard=Array(+document.getElementById("queenN").value).fill(-1);buildQueenTrace();drawQueens();
+  document.getElementById("qTotal").textContent=qTrace.length;document.getElementById("qCurrent").textContent=0;document.getElementById("qBack").textContent=0;document.getElementById("qChecks").textContent=0;document.getElementById("queenStepTitle").textContent="Step 0";document.getElementById("queenMessage").textContent="Ready. Press Next Step.";document.getElementById("queenLog").innerHTML="";document.getElementById("queenProgress").style.width="0%";
+}
+function queenStep(){
+  if(qPos>=qTrace.length)return;let a=qTrace[qPos++];
+  if(a.type==="try"){qBoard[a.r]=a.c}
+  if(a.type==="reject"){document.getElementById(`q-${a.r}-${a.c}`).classList.add("back-cell")}
+  if(a.type==="back"){qBoard[a.r]=-1;qBack++}
+  drawQueens();
+  document.getElementById("queenStepTitle").textContent=`Step ${qPos}`;document.getElementById("queenMessage").textContent=a.msg;document.getElementById("qCurrent").textContent=qPos;document.getElementById("qBack").textContent=qBack;document.getElementById("qChecks").textContent=qChecks;document.getElementById("queenProgress").style.width=(qPos/qTrace.length*100)+"%";addLog("queenLog",`<b>Step ${qPos}:</b> ${a.msg}`)
+}
+function queenAll(){while(qPos<qTrace.length)queenStep()}
+
+/* ================= CROSSWORD CSP ================= */
+/* A small word-square CSP. Rows are variables; each row must be compatible with all earlier crossing letters. */
+const words=["CODED","OPENS","DEVIC","ENAIL","SACRE"];
+let cTrace=[],cPos=0,cBack=0,cChecks=0,cGrid=Array.from({length:5},()=>Array(5).fill(""));
+function crossCompatible(grid,row,word){for(let r=0;r<row;r++){cChecks++;if(grid[r][row]!==""&&grid[r][row]!==word[r])return false}return true}
+function buildCrossTrace(){
+  cTrace=[];let g=Array.from({length:5},()=>Array(5).fill(""));
+  function bt(row){
+    if(row===5){cTrace.push({type:"done",msg:"All crossword variables assigned. All crossing constraints are satisfied."});return true}
+    for(let word of words){
+      cTrace.push({type:"try",r:row,word,msg:`Try word "${word}" for row ${row+1}. Propagate its letters to crossing cells.`});
+      if(crossCompatible(g,row,word)){g[row]=word.split("");if(bt(row+1))return true;g[row]=Array(5).fill("");cTrace.push({type:"back",r:row,word,msg:`"${word}" leads to a conflict later. Remove it and backtrack.`})}
+      else cTrace.push({type:"reject",r:row,word,msg:`Reject "${word}" because a crossing-letter constraint is violated.`})
+    }return false
+  }bt(0)
+}
+function drawCross(){
+  let b=document.getElementById("crossBoard");b.innerHTML="";
+  for(let r=0;r<5;r++)for(let c=0;c<5;c++){let x=document.createElement("input");x.id=`c-${r}-${c}`;x.readOnly=true;x.value=cGrid[r][c];b.appendChild(x)}
+}
+function prepareCrossword(){
+  cTrace=[];cPos=0;cBack=0;cChecks=0;cGrid=Array.from({length:5},()=>Array(5).fill(""));buildCrossTrace();drawCross();
+  document.getElementById("cTotal").textContent=cTrace.length;document.getElementById("cCurrent").textContent=0;document.getElementById("cBack").textContent=0;document.getElementById("cChecks").textContent=0;document.getElementById("crossStepTitle").textContent="Step 0";document.getElementById("crossMessage").textContent="Ready. Press Next Step.";document.getElementById("crossLog").innerHTML="";document.getElementById("crossProgress").style.width="0%";
+}
+function crossStep(){
+  if(cPos>=cTrace.length)return;let a=cTrace[cPos++];
+  if(a.type==="try")cGrid[a.r]=a.word.split("");
+  if(a.type==="back")cGrid[a.r]=Array(5).fill("");
+  drawCross();
+  if(a.r!==undefined&&a.type==="try")for(let c=0;c<5;c++)document.getElementById(`c-${a.r}-${c}`).classList.add("cross-new");
+  if(a.type==="back")cBack++;
+  document.getElementById("crossStepTitle").textContent=`Step ${cPos}`;document.getElementById("crossMessage").textContent=a.msg;document.getElementById("cCurrent").textContent=cPos;document.getElementById("cBack").textContent=cBack;document.getElementById("cChecks").textContent=cChecks;document.getElementById("crossProgress").style.width=(cPos/cTrace.length*100)+"%";addLog("crossLog",`<b>Step ${cPos}:</b> ${a.msg}`)
+}
+function crossAll(){while(cPos<cTrace.length)crossStep()}
+
+window.onload=()=>{prepareSudoku();prepareQueens();prepareCrossword()};
+</script>
+</body>
+</html>
