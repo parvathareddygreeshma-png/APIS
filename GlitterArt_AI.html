@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GlitterArt AI | Image to Glitter Drawing</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#090713;--panel:#171125;--panel2:#100c1d;--line:#44345d;--a:#f4a7ff;--b:#8fe7ff;--muted:#c1b8cf}
+body{font-family:Arial,sans-serif;background:radial-gradient(circle at 20% 10%,#2a1640 0,#090713 38%,#06050b 100%);color:#fff;min-height:100vh}
+header{background:#100b1b;border-bottom:1px solid var(--line);padding:15px 5%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-size:25px;font-weight:800;color:var(--a)}.logo span{color:#fff}
+nav button,.control{background:#281d38;border:1px solid #49385e;color:#fff;border-radius:9px;padding:9px 13px;cursor:pointer;margin-left:5px}nav button:hover,.control:hover{background:#3a2850}
+.container,.page{width:92%;max-width:1300px;margin:auto}.hero{text-align:center;padding:55px 20px 30px}.hero h1{font-size:44px}.hero h1 span{color:var(--a)}.hero p{max-width:850px;margin:14px auto;color:var(--muted);line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:25px 0 45px}.card,.stat,.panel{background:linear-gradient(145deg,#191228,#110d1d);border:1px solid var(--line);border-radius:16px}.card{padding:24px;text-align:center;transition:.2s}.card:hover{border-color:var(--a);transform:translateY(-3px)}.icon{font-size:42px;margin-bottom:10px}.card p,.muted{color:var(--muted);line-height:1.55}.btn{background:linear-gradient(90deg,var(--a),var(--b));color:#130b18;border:0;border-radius:9px;padding:11px 17px;font-weight:700;cursor:pointer;margin-top:12px}.stat{padding:18px}.stat h4{color:var(--a)}.stat p{font-size:28px;font-weight:bold;margin-top:7px}
+.page{display:none;background:#100c1d;border:1px solid var(--line);border-radius:18px;padding:25px;margin-top:30px;margin-bottom:50px}.page.active{display:block}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.title h2{color:var(--a)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.panel{padding:20px}.panel h3{color:var(--a);margin-bottom:13px}
+.field{display:flex;flex-direction:column;gap:7px}.field label{color:#ddd2e8}.field input,.field select{background:#191329;border:1px solid #4b3b60;color:#fff;border-radius:8px;padding:11px}
+.upload{border:2px dashed #73518c;border-radius:16px;padding:45px;text-align:center;background:#130d20;cursor:pointer}.upload:hover{border-color:var(--a)}
+.preview{min-height:420px;border:1px solid #49385d;border-radius:14px;background:#08060d;display:flex;align-items:center;justify-content:center;overflow:hidden}.preview img{max-width:100%;max-height:520px;display:block}
+.range{width:100%;accent-color:#f4a7ff}.effect-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.effect{padding:14px;border:1px solid #49385d;background:#171025;border-radius:10px;cursor:pointer;text-align:center}.effect.active{border-color:var(--a);box-shadow:0 0 15px #f4a7ff33}
+.alert{padding:14px;background:#211733;border:1px solid #513b68;border-radius:9px;margin:12px 0;color:#e9dff1}
+.table-wrap{overflow:auto;margin-top:18px}.table{width:100%;border-collapse:collapse;min-width:650px}.table th,.table td{padding:12px;border-bottom:1px solid #342746;text-align:left}.table th{color:var(--a)}.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#3a2650;color:#e8c9ff;font-size:12px}
+footer{text-align:center;background:#07050b;padding:25px;color:#897f98;margin-top:20px}
+@media(max-width:1000px){.cards,.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+@media(max-width:600px){nav{display:none}.cards,.grid,.effect-grid{grid-template-columns:1fr}.hero h1{font-size:34px}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">✨ GlitterArt <span>AI</span></div>
+<nav>
+<button onclick="home()">Dashboard</button>
+<button onclick="openPage('create')">Create Art</button>
+<button onclick="openPage('gallery')">Gallery</button>
+<button onclick="openPage('about')">How It Works</button>
+</nav>
+</header>
+
+<div id="home">
+<section class="hero">
+<h1>Turn Any Image Into <span>Glitter Art</span> ✨</h1>
+<p>Upload a photo and transform it into a beautiful drawing with sparkling glitter effects using browser-based computer vision.</p>
+</section>
+<div class="container">
+<div class="grid">
+<div class="stat"><h4>Images Created</h4><p id="countArt">0</p></div>
+<div class="stat"><h4>Drawing Engine</h4><p>OpenCV</p></div>
+<div class="stat"><h4>Glitter Engine</h4><p>✨ Sparkle</p></div>
+<div class="stat"><h4>Output</h4><p>PNG</p></div>
+</div>
+<div class="cards">
+<div class="card"><div class="icon">📷</div><h2>Upload Image</h2><p>Select any photograph from your device.</p><button class="btn" onclick="openPage('create')">Start Creating</button></div>
+<div class="card"><div class="icon">✏️</div><h2>Drawing Style</h2><p>Convert your photo into pencil, ink or line-art style.</p><button class="btn" onclick="openPage('create')">Choose Style</button></div>
+<div class="card"><div class="icon">✨</div><h2>Glitter Effects</h2><p>Add colorful sparkle particles around important image edges.</p><button class="btn" onclick="openPage('create')">Add Glitter</button></div>
+<div class="card"><div class="icon">💾</div><h2>Save Artwork</h2><p>Download the generated artwork as a PNG image.</p><button class="btn" onclick="openPage('gallery')">View Gallery</button></div>
+</div>
+<div class="two">
+<div class="panel"><h3>🎨 Processing Pipeline</h3><p class="muted" style="line-height:1.9">Image Upload → Grayscale → Blur → Edge Detection → Drawing Generation → Glitter Particle Placement → Layer Blending → Final Artwork.</p></div>
+<div class="panel"><h3>✨ Smart Glitter</h3><p class="muted">Glitter particles are concentrated around detected drawing edges instead of being placed uniformly across the whole image.</p></div>
+</div>
+</div>
+</div>
+
+<section id="create" class="page">
+<div class="title"><h2>🎨 Create Glitter Artwork</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<div class="two">
+<div class="panel">
+<h3>1. Upload Your Image</h3>
+<label class="upload" for="fileInput">
+<div style="font-size:52px">📷</div>
+<strong>Click to choose an image</strong>
+<p class="muted" style="margin-top:8px">JPG, PNG or WEBP</p>
+</label>
+<input id="fileInput" type="file" accept="image/*" style="display:none" onchange="loadImage(event)">
+<div id="fileName" class="alert">No image selected.</div>
+
+<h3 style="margin-top:20px">2. Drawing Style</h3>
+<div class="effect-grid" style="margin-top:10px">
+<div class="effect active" data-style="pencil" onclick="setStyle(this,'pencil')">✏️ Pencil</div>
+<div class="effect" data-style="ink" onclick="setStyle(this,'ink')">🖊️ Ink</div>
+<div class="effect" data-style="line" onclick="setStyle(this,'line')">〰️ Line Art</div>
+</div>
+
+<h3 style="margin-top:20px">3. Glitter Style</h3>
+<div class="effect-grid" style="margin-top:10px">
+<div class="effect active" data-glitter="rainbow" onclick="setGlitter(this,'rainbow')">🌈 Rainbow</div>
+<div class="effect" data-glitter="gold" onclick="setGlitter(this,'gold')">✨ Gold</div>
+<div class="effect" data-glitter="pink" onclick="setGlitter(this,'pink')">💖 Pink</div>
+<div class="effect" data-glitter="blue" onclick="setGlitter(this,'blue')">💙 Blue</div>
+<div class="effect" data-glitter="silver" onclick="setGlitter(this,'silver')">🤍 Silver</div>
+<div class="effect" data-glitter="mixed" onclick="setGlitter(this,'mixed')">🌟 Mixed</div>
+</div>
+
+<div class="field" style="margin-top:20px">
+<label>Glitter Intensity: <span id="intensityValue">55</span>%</label>
+<input id="intensity" class="range" type="range" min="5" max="100" value="55" oninput="document.getElementById('intensityValue').textContent=this.value">
+</div>
+<div class="field" style="margin-top:15px">
+<label>Drawing Contrast: <span id="contrastValue">70</span>%</label>
+<input id="contrast" class="range" type="range" min="20" max="100" value="70" oninput="document.getElementById('contrastValue').textContent=this.value">
+</div>
+<button class="btn" style="width:100%;margin-top:20px" onclick="generateArt()">✨ Generate Glitter Drawing</button>
+<button class="control" style="width:100%;margin-top:10px" onclick="resetCanvas()">↻ Reset</button>
+</div>
+
+<div class="panel">
+<h3>Live Preview</h3>
+<div id="preview" class="preview">
+<div id="placeholder" style="text-align:center;color:#8f839b"><div style="font-size:65px">🖼️</div><p>Your artwork will appear here</p></div>
+<canvas id="canvas" style="display:none;max-width:100%;max-height:520px"></canvas>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button class="btn" onclick="downloadArt()">⬇️ Download PNG</button>
+<button class="control" onclick="openPage('gallery')">🖼️ Gallery</button>
+</div>
+<div id="status" class="alert" style="margin-top:15px">Upload an image to begin.</div>
+</div>
+</div>
+</section>
+
+<section id="gallery" class="page">
+<div class="title"><h2>🖼️ Artwork Gallery</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<div class="panel">
+<h3>Generated Artwork</h3>
+<p class="muted">Your browser stores only the creation count. Downloaded images are saved directly to your device.</p>
+<div id="galleryMsg" class="alert">Generate your first glitter artwork from the Create Art page.</div>
+</div>
+</section>
+
+<section id="about" class="page">
+<div class="title"><h2>🔬 How It Works</h2><button class="control" onclick="home()">← Dashboard</button></div>
+<div class="two">
+<div class="panel"><h3>1. Image Preprocessing</h3><p class="muted">The uploaded image is resized for efficient browser processing and converted into grayscale information.</p></div>
+<div class="panel"><h3>2. Drawing Generation</h3><p class="muted">A lightweight edge-based process extracts visual contours and converts them into a drawing-like representation.</p></div>
+<div class="panel"><h3>3. Glitter Generation</h3><p class="muted">Sparkle particles are generated near detected edges. Their size, opacity and density change with the selected intensity.</p></div>
+<div class="panel"><h3>4. Layer Blending</h3><p class="muted">The drawing layer and glitter layer are composited to create the final artwork, which can be downloaded as PNG.</p></div>
+</div>
+</section>
+
+<footer>GlitterArt AI © 2026 | Computer Vision + Creative Image Processing | Academic Demonstration</footer>
+
+<script>
+let sourceImage=null, styleMode="pencil", glitterMode="rainbow", artCount=Number(localStorage.getItem("ga_count")||0);
+document.getElementById("countArt").textContent=artCount;
+
+function home(){
+document.getElementById("home").style.display="block";
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+}
+function openPage(id){
+document.getElementById("home").style.display="none";
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+function setStyle(el,v){
+document.querySelectorAll("[data-style]").forEach(x=>x.classList.remove("active"));
+el.classList.add("active");styleMode=v;
+}
+function setGlitter(el,v){
+document.querySelectorAll("[data-glitter]").forEach(x=>x.classList.remove("active"));
+el.classList.add("active");glitterMode=v;
+}
+function loadImage(e){
+let file=e.target.files[0]; if(!file)return;
+document.getElementById("fileName").textContent="Selected: "+file.name;
+let reader=new FileReader();
+reader.onload=function(ev){
+sourceImage=new Image();
+sourceImage.onload=function(){document.getElementById("status").textContent="Image loaded. Choose your effects and click Generate Glitter Drawing.";};
+sourceImage.src=ev.target.result;
+}; reader.readAsDataURL(file);
+}
+function resetCanvas(){
+sourceImage=null;
+document.getElementById("fileInput").value="";
+document.getElementById("fileName").textContent="No image selected.";
+document.getElementById("canvas").style.display="none";
+document.getElementById("placeholder").style.display="block";
+document.getElementById("status").textContent="Upload an image to begin.";
+}
+function clamp(v){return Math.max(0,Math.min(255,v))}
+function getRGB(g){
+if(glitterMode==="gold")return [255,205,70];
+if(glitterMode==="pink")return [255,105,210];
+if(glitterMode==="blue")return [90,210,255];
+if(glitterMode==="silver")return [235,240,255];
+let r=Math.random()*360;
+return [128+127*Math.sin(r*Math.PI/180),128+127*Math.sin((r+120)*Math.PI/180),128+127*Math.sin((r+240)*Math.PI/180)];
+}
+function generateArt(){
+if(!sourceImage){alert("Please upload an image first.");return;}
+let canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
+let max=850,scale=Math.min(1,max/sourceImage.width,max/sourceImage.height);
+canvas.width=Math.floor(sourceImage.width*scale);canvas.height=Math.floor(sourceImage.height*scale);
+ctx.drawImage(sourceImage,0,0,canvas.width,canvas.height);
+let img=ctx.getImageData(0,0,canvas.width,canvas.height),d=img.data;
+let gray=new Float32Array(canvas.width*canvas.height);
+for(let i=0,p=0;i<d.length;i+=4,p++) gray[p]=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+let out=ctx.createImageData(canvas.width,canvas.height),od=out.data;
+let contrast=Number(document.getElementById("contrast").value)/70;
+for(let y=1;y<canvas.height-1;y++){
+for(let x=1;x<canvas.width-1;x++){
+let p=y*canvas.width+x;
+let gx=gray[p+1]-gray[p-1],gy=gray[p+canvas.width]-gray[p-canvas.width];
+let edge=Math.min(255,Math.sqrt(gx*gx+gy*gy)*contrast);
+let v=styleMode==="ink" ? 255-edge : 235-edge;
+if(styleMode==="line") v=edge>25?25:245;
+let q=p*4;od[q]=od[q+1]=od[q+2]=clamp(v);od[q+3]=255;
+}}
+ctx.putImageData(out,0,0);
+
+let intensity=Number(document.getElementById("intensity").value);
+let count=Math.floor(canvas.width*canvas.height*intensity/100/2600);
+ctx.save();
+for(let n=0;n<count;n++){
+let x=Math.floor(Math.random()*canvas.width),y=Math.floor(Math.random()*canvas.height),p=y*canvas.width+x;
+let near=false;
+for(let yy=-2;yy<=2;yy++)for(let xx=-2;xx<=2;xx++){
+let px=x+xx,py=y+yy;if(px>=0&&py>=0&&px<canvas.width&&py<canvas.height){
+let v=gray[py*canvas.width+px]; if(v<125){near=true;break;}
+}} 
+if(!near && Math.random()<0.72)continue;
+let [r,g,b]=getRGB();
+let s=0.8+Math.random()*2.8;
+ctx.globalAlpha=.45+Math.random()*.55;
+ctx.fillStyle=`rgb(${r},${g},${b})`;
+ctx.beginPath();ctx.arc(x,y,s,0,Math.PI*2);ctx.fill();
+if(Math.random()<.35){
+ctx.globalAlpha=.8;ctx.strokeStyle=`rgb(${r},${g},${b})`;ctx.lineWidth=.6;
+ctx.beginPath();ctx.moveTo(x-s*2.4,y);ctx.lineTo(x+s*2.4,y);ctx.moveTo(x,y-s*2.4);ctx.lineTo(x,y+s*2.4);ctx.stroke();
+}
+}
+ctx.restore();ctx.globalAlpha=1;
+document.getElementById("placeholder").style.display="none";
+canvas.style.display="block";
+document.getElementById("status").textContent="✨ Glitter artwork generated successfully! You can download it as PNG.";
+artCount++;localStorage.setItem("ga_count",artCount);document.getElementById("countArt").textContent=artCount;
+document.getElementById("galleryMsg").textContent="Your latest artwork has been generated. Click Download PNG to save it.";
+}
+function downloadArt(){
+let canvas=document.getElementById("canvas");
+if(canvas.style.display==="none"){alert("Generate an artwork first.");return;}
+let a=document.createElement("a");a.download="glitter-artwork.png";a.href=canvas.toDataURL("image/png");a.click();
+}
+</script>
+</body>
+</html>
