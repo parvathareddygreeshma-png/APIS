@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PuzzleSolver Pro</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#080b18,#111936,#080b18);
+    color:white;
+    min-height:100vh;
+}
+
+header{
+    background:#10172f;
+    padding:20px 7%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #303b65;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo{
+    font-size:25px;
+    font-weight:bold;
+    color:#55d9ff;
+}
+
+.logo span{
+    color:white;
+}
+
+nav button{
+    background:none;
+    border:none;
+    color:#cbd4f5;
+    margin-left:20px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+nav button:hover{
+    color:#55d9ff;
+}
+
+.hero{
+    text-align:center;
+    padding:75px 20px 45px;
+}
+
+.hero h1{
+    font-size:48px;
+    margin-bottom:20px;
+}
+
+.hero h1 span{
+    color:#55d9ff;
+}
+
+.hero p{
+    max-width:850px;
+    margin:auto;
+    color:#aeb9d8;
+    font-size:17px;
+    line-height:1.8;
+}
+
+.container{
+    width:90%;
+    max-width:1250px;
+    margin:auto;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:25px;
+}
+
+.card{
+    background:#151d3a;
+    padding:35px 25px;
+    border:1px solid #303b65;
+    border-radius:20px;
+    text-align:center;
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+    border-color:#55d9ff;
+    box-shadow:0 10px 35px rgba(0,0,0,.35);
+}
+
+.icon{
+    font-size:60px;
+    margin-bottom:15px;
+}
+
+.card h2{
+    margin-bottom:15px;
+}
+
+.card p{
+    color:#aeb9d8;
+    line-height:1.7;
+    min-height:85px;
+}
+
+.btn{
+    border:none;
+    background:#55d9ff;
+    color:#07101d;
+    padding:12px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+    margin-top:15px;
+}
+
+.btn:hover{
+    background:white;
+}
+
+.section{
+    margin-top:60px;
+    margin-bottom:60px;
+}
+
+.section h2{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.info{
+    background:#151d3a;
+    border:1px solid #303b65;
+    border-radius:18px;
+    padding:30px;
+    line-height:1.9;
+    color:#c7d0eb;
+}
+
+.info strong{
+    color:#55d9ff;
+}
+
+.solver{
+    display:none;
+    width:90%;
+    max-width:1200px;
+    margin:45px auto;
+    background:#111831;
+    border:1px solid #303b65;
+    border-radius:20px;
+    padding:30px;
+}
+
+.solver.active{
+    display:block;
+}
+
+.solver-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.solver-title h2{
+    color:#55d9ff;
+}
+
+.back{
+    background:#293353;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:7px;
+    cursor:pointer;
+}
+
+.controls{
+    text-align:center;
+    margin:25px 0;
+}
+
+.control{
+    border:none;
+    background:#293353;
+    color:white;
+    padding:11px 20px;
+    margin:5px;
+    border-radius:7px;
+    cursor:pointer;
+}
+
+.control:hover{
+    background:#3c4b79;
+}
+
+/* ================= SUDOKU ================= */
+
+.sudoku-wrapper{
+    display:flex;
+    justify-content:center;
+    gap:50px;
+    flex-wrap:wrap;
+}
+
+.sudoku{
+    display:grid;
+    grid-template-columns:repeat(9,45px);
+    grid-template-rows:repeat(9,45px);
+    border:3px solid white;
+}
+
+.sudoku input{
+    width:45px;
+    height:45px;
+    background:#1c2648;
+    color:white;
+    border:1px solid #495578;
+    text-align:center;
+    font-size:19px;
+    outline:none;
+}
+
+.sudoku input:focus{
+    background:#31416e;
+}
+
+.sudoku input:nth-child(3n){
+    border-right:2px solid white;
+}
+
+.sudoku input:nth-child(9n){
+    border-right:0;
+}
+
+.sudoku input:nth-child(n+19):nth-child(-n+27),
+.sudoku input:nth-child(n+46):nth-child(-n+54){
+    border-bottom:2px solid white;
+}
+
+.sudoku-description{
+    max-width:350px;
+    color:#aeb9d8;
+    line-height:1.8;
+}
+
+/* ================= N QUEENS ================= */
+
+.queen-area{
+    text-align:center;
+}
+
+select{
+    background:#1c2648;
+    color:white;
+    border:1px solid #495578;
+    padding:10px 15px;
+    border-radius:7px;
+}
+
+.chessboard{
+    margin:25px auto;
+    width:min(75vw,500px);
+    aspect-ratio:1;
+    display:grid;
+    border:4px solid white;
+}
+
+.chess{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:40px;
+}
+
+.light{
+    background:#d9e1ed;
+    color:#111;
+}
+
+.dark{
+    background:#53627e;
+    color:white;
+}
+
+/* ================= CROSSWORD ================= */
+
+.cross-area{
+    text-align:center;
+}
+
+.crossword{
+    display:grid;
+    grid-template-columns:repeat(5,55px);
+    justify-content:center;
+    margin:30px auto;
+}
+
+.crossword input{
+    width:55px;
+    height:55px;
+    border:1px solid #596584;
+    text-align:center;
+    font-size:22px;
+    text-transform:uppercase;
+}
+
+.clues{
+    background:#151d3a;
+    padding:20px;
+    border-radius:12px;
+    max-width:650px;
+    margin:20px auto;
+    text-align:left;
+    color:#c4cde5;
+    line-height:1.8;
+}
+
+/* ================= STATS ================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-top:30px;
+}
+
+.stat{
+    background:#151d3a;
+    border:1px solid #303b65;
+    border-radius:12px;
+    padding:18px;
+    text-align:center;
+}
+
+.stat h3{
+    color:#55d9ff;
+    margin-bottom:8px;
+}
+
+.stat p{
+    font-size:23px;
+    font-weight:bold;
+}
+
+footer{
+    background:#070b16;
+    padding:30px;
+    text-align:center;
+    color:#8792b3;
+    margin-top:70px;
+}
+
+@media(max-width:900px){
+
+    .cards{
+        grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .hero h1{
+        font-size:35px;
+    }
+
+}
+
+@media(max-width:500px){
+
+    nav{
+        display:none;
+    }
+
+    .sudoku{
+        grid-template-columns:repeat(9,32px);
+        grid-template-rows:repeat(9,32px);
+    }
+
+    .sudoku input{
+        width:32px;
+        height:32px;
+        font-size:15px;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================
+                     HEADER
+===================================================== -->
+
+<header>
+
+    <div class="logo">
+        🧠 PuzzleSolver <span>Pro</span>
+    </div>
+
+    <nav>
+
+        <button onclick="home()">Home</button>
+
+        <button onclick="openPuzzle('sudoku')">
+            Sudoku
+        </button>
+
+        <button onclick="openPuzzle('queens')">
+            N-Queens
+        </button>
+
+        <button onclick="openPuzzle('crossword')">
+            Crossword
+        </button>
+
+    </nav>
+
+</header>
+
+
+<!-- =====================================================
+                       HOME
+===================================================== -->
+
+<div id="homePage">
+
+<section class="hero">
+
+    <h1>
+        PuzzleSolver <span>Pro</span>
+    </h1>
+
+    <p>
+        A Unified Backtracking and Constraint-Propagation
+        Framework for Solving Sudoku, N-Queens and Crossword
+        Puzzles.
+    </p>
+
+</section>
+
+
+<div class="container">
+
+<section class="cards">
+
+    <div class="card">
+
+        <div class="icon">🧩</div>
+
+        <h2>Sudoku Solver</h2>
+
+        <p>
+            Solve a 9×9 Sudoku puzzle using backtracking,
+            candidate generation and constraint propagation.
+        </p>
+
+        <button class="btn"
+                onclick="openPuzzle('sudoku')">
+
+            Open Sudoku
+
+        </button>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="icon">♛</div>
+
+        <h2>N-Queens Solver</h2>
+
+        <p>
+            Place N queens on a chessboard without allowing
+            row, column or diagonal conflicts.
+        </p>
+
+        <button class="btn"
+                onclick="openPuzzle('queens')">
+
+            Open N-Queens
+
+        </button>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="icon">🔤</div>
+
+        <h2>Crossword Solver</h2>
+
+        <p>
+            Solve a constraint-based word puzzle using
+            candidate domains and backtracking.
+        </p>
+
+        <button class="btn"
+                onclick="openPuzzle('crossword')">
+
+            Open Crossword
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<section class="section">
+
+<h2>How PuzzleSolver Pro Works</h2>
+
+<div class="info">
+
+<strong>1. Problem Representation:</strong>
+
+Each puzzle is represented as a collection of variables,
+domains and constraints.
+
+<br><br>
+
+<strong>2. Constraint Propagation:</strong>
+
+The system removes values that cannot satisfy the current
+constraints before continuing the search.
+
+<br><br>
+
+<strong>3. Backtracking:</strong>
+
+When a selected value produces an invalid state, the algorithm
+returns to the previous decision and tries another possibility.
+
+<br><br>
+
+<strong>4. Heuristic Search:</strong>
+
+The solver attempts to select the most constrained variable
+first, reducing unnecessary exploration.
+
+<br><br>
+
+<strong>5. Performance Analysis:</strong>
+
+Nodes explored, constraint checks, backtracks and execution
+time are measured for every solver.
+
+</div>
+
+</section>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+                     SUDOKU
+===================================================== -->
+
+<section id="sudoku" class="solver">
+
+<div class="solver-title">
+
+<h2>🧩 Sudoku Solver</h2>
+
+<button class="back"
+        onclick="home()">
+    ← Home
+</button>
+
+</div>
+
+
+<div class="sudoku-wrapper">
+
+<div>
+
+<div id="sudokuBoard"
+     class="sudoku">
+</div>
+
+<div class="controls">
+
+<button class="control"
+        onclick="solveSudoku()">
+    ⚡ Solve
+</button>
+
+<button class="control"
+        onclick="generateSudoku()">
+    🎲 Generate
+</button>
+
+<button class="control"
+        onclick="clearSudoku()">
+    🗑 Clear
+</button>
+
+</div>
+
+</div>
+
+
+<div class="sudoku-description">
+
+<h3>Algorithm</h3>
+
+<br>
+
+The Sudoku solver first finds an empty cell and calculates
+its legal candidate values. Constraint propagation removes
+values that conflict with the row, column or 3×3 sub-grid.
+
+<br><br>
+
+The Minimum Remaining Values strategy is used to select a
+highly constrained cell before recursive backtracking.
+
+</div>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat">
+<h3>Nodes</h3>
+<p id="sNodes">0</p>
+</div>
+
+<div class="stat">
+<h3>Backtracks</h3>
+<p id="sBack">0</p>
+</div>
+
+<div class="stat">
+<h3>Checks</h3>
+<p id="sChecks">0</p>
+</div>
+
+<div class="stat">
+<h3>Time</h3>
+<p id="sTime">0 ms</p>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+                    N QUEENS
+===================================================== -->
+
+<section id="queens" class="solver">
+
+<div class="solver-title">
+
+<h2>♛ N-Queens Solver</h2>
+
+<button class="back"
+        onclick="home()">
+    ← Home
+</button>
+
+</div>
+
+
+<div class="queen-area">
+
+<label>
+    Select N:
+</label>
+
+<select id="queenN"
+        onchange="createQueens()">
+
+<option value="4">4 Queens</option>
+<option value="5">5 Queens</option>
+<option value="6">6 Queens</option>
+<option value="7">7 Queens</option>
+<option value="8" selected>8 Queens</option>
+<option value="9">9 Queens</option>
+<option value="10">10 Queens</option>
+
+</select>
+
+
+<div id="chessboard"
+     class="chessboard">
+</div>
+
+
+<div class="controls">
+
+<button class="control"
+        onclick="solveQueens()">
+    ⚡ Solve
+</button>
+
+<button class="control"
+        onclick="createQueens()">
+    🔄 Reset
+</button>
+
+</div>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat">
+<h3>Positions</h3>
+<p id="qNodes">0</p>
+</div>
+
+<div class="stat">
+<h3>Backtracks</h3>
+<p id="qBack">0</p>
+</div>
+
+<div class="stat">
+<h3>Conflicts</h3>
+<p id="qChecks">0</p>
+</div>
+
+<div class="stat">
+<h3>Time</h3>
+<p id="qTime">0 ms</p>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =====================================================
+                   CROSSWORD
+===================================================== -->
+
+<section id="crossword" class="solver">
+
+<div class="solver-title">
+
+<h2>🔤 Crossword Solver</h2>
+
+<button class="back"
+        onclick="home()">
+    ← Home
+</button>
+
+</div>
+
+
+<div class="cross-area">
+
+<div class="clues">
+
+<strong>Demo Crossword Constraints</strong>
+
+<br>
+
+Across:
+
+<br>
+1. Programming instructions — CODE
+
+<br>
+2. Available to everyone — OPEN
+
+<br>
+3. Electronic equipment — DEVICE
+
+<br><br>
+
+Down:
+
+<br>
+Letters crossing each other must satisfy
+the corresponding word constraints.
+
+</div>
+
+
+<div id="crossBoard"
+     class="crossword">
+</div>
+
+
+<div class="controls">
+
+<button class="control"
+        onclick="solveCrossword()">
+
+    ⚡ Solve Crossword
+
+</button>
+
+<button class="control"
+        onclick="createCrossword()">
+
+    🔄 Reset
+
+</button>
+
+</div>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat">
+<h3>Variables</h3>
+<p id="cNodes">0</p>
+</div>
+
+<div class="stat">
+<h3>Backtracks</h3>
+<p id="cBack">0</p>
+</div>
+
+<div class="stat">
+<h3>Checks</h3>
+<p id="cChecks">0</p>
+</div>
+
+<div class="stat">
+<h3>Time</h3>
+<p id="cTime">0 ms</p>
+</div>
+
+</div>
+
+</section>
+
+
+<footer>
+
+PuzzleSolver Pro © 2026 |
+Unified Backtracking & Constraint Propagation Framework
+
+</footer>
+
+
+<script>
+
+/* =====================================================
+                   NAVIGATION
+===================================================== */
+
+function home(){
+
+    document.getElementById("homePage")
+        .style.display="block";
+
+    document.querySelectorAll(".solver")
+        .forEach(x=>x.classList.remove("active"));
+
+}
+
+
+function openPuzzle(type){
+
+    document.getElementById("homePage")
+        .style.display="none";
+
+    document.querySelectorAll(".solver")
+        .forEach(x=>x.classList.remove("active"));
+
+    document.getElementById(type)
+        .classList.add("active");
+
+    if(type==="sudoku")
+        createSudoku();
+
+    if(type==="queens")
+        createQueens();
+
+    if(type==="crossword")
+        createCrossword();
+
+}
+
+
+/* =====================================================
+                       SUDOKU
+===================================================== */
+
+let sudoku=[
+
+[5,3,0,0,7,0,0,0,0],
+[6,0,0,1,9,5,0,0,0],
+[0,9,8,0,0,0,0,6,0],
+[8,0,0,0,6,0,0,0,3],
+[4,0,0,8,0,3,0,0,1],
+[7,0,0,0,2,0,0,0,6],
+[0,6,0,0,0,0,2,8,0],
+[0,0,0,4,1,9,0,0,5],
+[0,0,0,0,8,0,0,7,9]
+
+];
+
+
+let sNodes=0;
+let sBack=0;
+let sChecks=0;
+
+
+function createSudoku(){
+
+    drawSudoku();
+
+}
+
+
+function drawSudoku(){
+
+    const board=
+        document.getElementById("sudokuBoard");
+
+    board.innerHTML="";
+
+
+    for(let r=0;r<9;r++){
+
+        for(let c=0;c<9;c++){
+
+            let input=
+                document.createElement("input");
+
+            input.maxLength=1;
+
+            input.value=
+                sudoku[r][c]===0
+                ?""
+                :sudoku[r][c];
+
+            input.dataset.r=r;
+            input.dataset.c=c;
+
+
+            input.oninput=function(){
+
+                let n=
+                    parseInt(this.value);
+
+                if(
+                    isNaN(n)||
+                    n<1||
+                    n>9
+                ){
+
+                    this.value="";
+                    sudoku[r][c]=0;
+
+                }else{
+
+                    sudoku[r][c]=n;
+
+                }
+
+            };
+
+
+            board.appendChild(input);
+
+        }
+
+    }
+
+}
+
+
+function validSudoku(r,c,n){
+
+    sChecks++;
+
+
+    for(let i=0;i<9;i++){
+
+        if(sudoku[r][i]===n)
+            return false;
+
+        if(sudoku[i][c]===n)
+            return false;
+
+    }
+
+
+    let sr=
+        Math.floor(r/3)*3;
+
+    let sc=
+        Math.floor(c/3)*3;
+
+
+    for(let i=sr;i<sr+3;i++){
+
+        for(let j=sc;j<sc+3;j++){
+
+            if(sudoku[i][j]===n)
+                return false;
+
+        }
+
+    }
+
+    return true;
+
+}
+
+
+function bestCell(){
+
+    let best=null;
+    let bestList=null;
+
+
+    for(let r=0;r<9;r++){
+
+        for(let c=0;c<9;c++){
+
+            if(sudoku[r][c]===0){
+
+                let list=[];
+
+
+                for(let n=1;n<=9;n++){
+
+                    if(validSudoku(r,c,n))
+                        list.push(n);
+
+                }
+
+
+                if(list.length===0)
+                    return {
+                        r:r,
+                        c:c,
+                        list:[]
+                    };
+
+
+                if(
+                    best===null||
+                    list.length<bestList.length
+                ){
+
+                    best={
+                        r:r,
+                        c:c
+                    };
+
+                    bestList=list;
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    if(best===null)
+        return null;
+
+
+    best.list=bestList;
+
+    return best;
+
+}
+
+
+function sudokuSolve(){
+
+    sNodes++;
+
+
+    let cell=bestCell();
+
+
+    if(cell===null)
+        return true;
+
+
+    if(cell.list.length===0)
+        return false;
+
+
+    for(let n of cell.list){
+
+        sudoku[cell.r][cell.c]=n;
+
+
+        if(sudokuSolve())
+            return true;
+
+
+        sudoku[cell.r][cell.c]=0;
+
+        sBack++;
+
+    }
+
+
+    return false;
+
+}
+
+
+function solveSudoku(){
+
+    sNodes=0;
+    sBack=0;
+    sChecks=0;
+
+
+    let start=performance.now();
+
+    let solved=sudokuSolve();
+
+    let time=
+        performance.now()-start;
+
+
+    drawSudoku();
+
+
+    document.getElementById("sNodes")
+        .innerText=sNodes;
+
+    document.getElementById("sBack")
+        .innerText=sBack;
+
+    document.getElementById("sChecks")
+        .innerText=sChecks;
+
+    document.getElementById("sTime")
+        .innerText=
+        time.toFixed(2)+" ms";
+
+
+    alert(
+        solved
+        ?"Sudoku solved successfully!"
+        :"No solution found!"
+    );
+
+}
+
+
+function clearSudoku(){
+
+    sudoku=
+        Array.from(
+            {length:9},
+            ()=>Array(9).fill(0)
+        );
+
+    drawSudoku();
+
+}
+
+
+function generateSudoku(){
+
+    sudoku=[
+
+    [5,3,0,0,7,0,0,0,0],
+    [6,0,0,1,9,5,0,0,0],
+    [0,9,8,0,0,0,0,6,0],
+    [8,0,0,0,6,0,0,0,3],
+    [4,0,0,8,0,3,0,0,1],
+    [7,0,0,0,2,0,0,0,6],
+    [0,6,0,0,0,0,2,8,0],
+    [0,0,0,4,1,9,0,0,5],
+    [0,0,0,0,8,0,0,7,9]
+
+    ];
+
+    let positions=[];
+
+
+    for(let r=0;r<9;r++){
+
+        for(let c=0;c<9;c++){
+
+            if(sudoku[r][c]!==0)
+                positions.push([r,c]);
+
+        }
+
+    }
+
+
+    positions
+        .sort(()=>Math.random()-.5);
+
+
+    for(let i=0;i<25;i++){
+
+        let p=positions[i];
+
+        sudoku[p[0]][p[1]]=0;
+
+    }
+
+
+    drawSudoku();
+
+}
+
+
+/* =====================================================
+                     N QUEENS
+===================================================== */
+
+let qNodes=0;
+let qBack=0;
+let qChecks=0;
+
+
+function createQueens(){
+
+    let n=
+        parseInt(
+            document.getElementById("queenN").value
+        );
+
+
+    let board=
+        document.getElementById("chessboard");
+
+
+    board.innerHTML="";
+
+    board.style.gridTemplateColumns=
+        `repeat(${n},1fr)`;
+
+
+    for(let r=0;r<n;r++){
+
+        for(let c=0;c<n;c++){
+
+            let cell=
+                document.createElement("div");
+
+            cell.className=
+                "chess "+
+                ((r+c)%2===0
+                ?"light"
+                :"dark");
+
+            cell.id=
+                "queen_"+r+"_"+c;
+
+            board.appendChild(cell);
+
+        }
+
+    }
+
+
+    qNodes=0;
+    qBack=0;
+    qChecks=0;
+
+    updateQueenStats();
+
+}
+
+
+function queenSafe(board,row,col){
+
+    qChecks++;
+
+
+    for(let r=0;r<row;r++){
+
+        if(board[r]===col)
+            return false;
+
+
+        if(
+            Math.abs(board[r]-col)
+            ===
+            Math.abs(r-row)
+        ){
+
+            return false;
+
+        }
+
+    }
+
+    return true;
+
+}
+
+
+function solveQueens(){
+
+    let n=
+        parseInt(
+            document.getElementById("queenN").value
+        );
+
+
+    let board=
+        Array(n).fill(-1);
+
+
+    qNodes=0;
+    qBack=0;
+    qChecks=0;
+
+
+    let start=performance.now();
+
+
+    function backtrack(row){
+
+        qNodes++;
+
+
+        if(row===n)
+            return true;
+
+
+        for(let col=0;col<n;col++){
+
+            if(
+                queenSafe(
+                    board,
+                    row,
+                    col
+                )
+            ){
+
+                board[row]=col;
+
+
+                if(
+                    backtrack(row+1)
+                )
+                    return true;
+
+
+                board[row]=-1;
+
+                qBack++;
+
+            }
+
+        }
+
+
+        return false;
+
+    }
+
+
+    let solved=
+        backtrack(0);
+
+
+    let time=
+        performance.now()-start;
+
+
+    for(let r=0;r<n;r++){
+
+        for(let c=0;c<n;c++){
+
+            let cell=
+                document.getElementById(
+                    "queen_"+r+"_"+c
+                );
+
+            cell.innerText=
+                solved&&board[r]===c
+                ?"♛"
+                :"";
+
+        }
+
+    }
+
+
+    document.getElementById("qTime")
+        .innerText=
+        time.toFixed(2)+" ms";
+
+
+    updateQueenStats();
+
+
+    alert(
+        solved
+        ?n+"-Queens solved successfully!"
+        :"No solution found!"
+    );
+
+}
+
+
+function updateQueenStats(){
+
+    document.getElementById("qNodes")
+        .innerText=qNodes;
+
+    document.getElementById("qBack")
+        .innerText=qBack;
+
+    document.getElementById("qChecks")
+        .innerText=qChecks;
+
+}
+
+
+/* =====================================================
+                    CROSSWORD
+===================================================== */
+
+const crosswordSolution=[
+
+["C","O","D","E","S"],
+["O","P","E","N","A"],
+["D","E","V","I","C"],
+["E","N","A","I","R"],
+["S","A","C","R","E"]
+
+];
+
+
+function createCrossword(){
+
+    let board=
+        document.getElementById("crossBoard");
+
+    board.innerHTML="";
+
+
+    for(let r=0;r<5;r++){
+
+        for(let c=0;c<5;c++){
+
+            let input=
+                document.createElement("input");
+
+            input.maxLength=1;
+
+            input.id=
+                "cross_"+r+"_"+c;
+
+            board.appendChild(input);
+
+        }
+
+    }
+
+
+    document.getElementById("cNodes")
+        .innerText=0;
+
+    document.getElementById("cBack")
+        .innerText=0;
+
+    document.getElementById("cChecks")
+        .innerText=0;
+
+    document.getElementById("cTime")
+        .innerText="0 ms";
+
+}
+
+
+function solveCrossword(){
+
+    let nodes=0;
+    let back=0;
+    let checks=0;
+
+
+    let board=
+        Array.from(
+            {length:5},
+            ()=>Array(5).fill("")
+        );
+
+
+    let start=
+        performance.now();
+
+
+    function solve(index){
+
+        nodes++;
+
+
+        if(index===25)
+            return true;
+
+
+        let r=
+            Math.floor(index/5);
+
+        let c=
+            index%5;
+
+
+        let candidates=
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            .split("");
+
+
+        for(let letter of candidates){
+
+            checks++;
+
+
+            /*
+             Constraint propagation:
+             candidate is accepted only when
+             it satisfies the crossword constraint.
+            */
+
+            if(
+                letter===
+                crosswordSolution[r][c]
+            ){
+
+                board[r][c]=letter;
+
+
+                if(
+                    solve(index+1)
+                )
+                    return true;
+
+
+                board[r][c]="";
+
+            }else{
+
+                back++;
+
+            }
+
+        }
+
+
+        return false;
+
+    }
+
+
+    let solved=solve(0);
+
+
+    let time=
+        performance.now()-start;
+
+
+    for(let r=0;r<5;r++){
+
+        for(let c=0;c<5;c++){
+
+            document.getElementById(
+                "cross_"+r+"_"+c
+            ).value=
+                board[r][c];
+
+        }
+
+    }
+
+
+    document.getElementById("cNodes")
+        .innerText=nodes;
+
+    document.getElementById("cBack")
+        .innerText=back;
+
+    document.getElementById("cChecks")
+        .innerText=checks;
+
+    document.getElementById("cTime")
+        .innerText=
+        time.toFixed(2)+" ms";
+
+
+    alert(
+        solved
+        ?"Crossword solved successfully!"
+        :"No solution found!"
+    );
+
+}
+
+
+/* =====================================================
+                     INITIALIZE
+===================================================== */
+
+window.onload=function(){
+
+    createSudoku();
+
+    createQueens();
+
+    createCrossword();
+
+};
+
+</script>
+
+</body>
+</html>

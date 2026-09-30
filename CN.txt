@@ -1,0 +1,1384 @@
+from flask import Flask, render_template_string, jsonify, request
+import sqlite3
+import random
+from datetime import datetime
+
+app = Flask(__name__)
+
+DATABASE = "wifi6_campus.db"
+
+
+# ============================================================
+# DATABASE
+# ============================================================
+
+def get_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def initialize_database():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS access_points (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            location TEXT,
+            band TEXT,
+            channel INTEGER,
+            users INTEGER,
+            signal REAL,
+            throughput REAL,
+            latency REAL,
+            packet_loss REAL,
+            status TEXT
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS configuration (
+            id INTEGER PRIMARY KEY,
+            ssid TEXT,
+            channel_width TEXT,
+            transmit_power INTEGER,
+            ofdma TEXT,
+            mu_mimo TEXT,
+            twt TEXT
+        )
+    """)
+
+    cursor.execute("SELECT COUNT(*) FROM access_points")
+
+    if cursor.fetchone()[0] == 0:
+
+        access_points = [
+            ("AP-01", "Main Block", "5 GHz", 36, 42, -48, 820, 18, 0.8, "Online"),
+            ("AP-02", "Computer Lab", "5 GHz", 44, 58, -52, 760, 24, 1.2, "Online"),
+            ("AP-03", "Library", "5 GHz", 149, 35, -45, 910, 15, 0.5, "Online"),
+            ("AP-04", "Seminar Hall", "5 GHz", 157, 74, -67, 540, 48, 3.8, "Warning"),
+            ("AP-05", "Hostel Block", "2.4 GHz", 6, 63, -61, 310, 55, 4.2, "Warning"),
+            ("AP-06", "Cafeteria", "5 GHz", 40, 29, -50, 780, 20, 1.0, "Online")
+        ]
+
+        cursor.executemany("""
+            INSERT INTO access_points
+            (name, location, band, channel, users, signal,
+             throughput, latency, packet_loss, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, access_points)
+
+    cursor.execute("SELECT COUNT(*) FROM configuration")
+
+    if cursor.fetchone()[0] == 0:
+
+        cursor.execute("""
+            INSERT INTO configuration
+            VALUES (1, 'SmartCampus-WiFi6', '80 MHz',
+                    20, 'Enabled', 'Enabled', 'Enabled')
+        """)
+
+    conn.commit()
+    conn.close()
+
+
+initialize_database()
+
+
+# ============================================================
+# DASHBOARD PAGE
+# ============================================================
+
+HTML = """
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>SmartWiFi Campus - Wi-Fi 6</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f7fb;
+    color: #1f2937;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 240px;
+    height: 100vh;
+    background: #111827;
+    color: white;
+    padding: 25px 15px;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 35px;
+    text-align: center;
+}
+
+.logo span {
+    color: #38bdf8;
+}
+
+.menu {
+    list-style: none;
+}
+
+.menu li {
+    padding: 14px;
+    margin: 6px 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.menu li:hover {
+    background: #1e40af;
+}
+
+/* MAIN */
+
+.main {
+    margin-left: 240px;
+    padding: 25px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.header h1 {
+    font-size: 28px;
+}
+
+.status {
+    background: #dcfce7;
+    color: #166534;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+/* KPI CARDS */
+
+.cards {
+    display: grid;
+    grid-template-columns:
+    repeat(auto-fit, minmax(190px, 1fr));
+
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.card h3 {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.value {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.blue {
+    color: #2563eb;
+}
+
+.green {
+    color: #16a34a;
+}
+
+.orange {
+    color: #ea580c;
+}
+
+.red {
+    color: #dc2626;
+}
+
+/* GRID */
+
+.grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.panel {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.panel h2 {
+    margin-bottom: 18px;
+}
+
+/* ACCESS POINT TABLE */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+    background: #f8fafc;
+}
+
+.online {
+    color: #16a34a;
+    font-weight: bold;
+}
+
+.warning {
+    color: #ea580c;
+    font-weight: bold;
+}
+
+/* CAMPUS MAP */
+
+.campus {
+    height: 330px;
+    background: #e5e7eb;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.building {
+    position: absolute;
+    background: white;
+    border: 2px solid #64748b;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.b1 {
+    width: 180px;
+    height: 90px;
+    left: 30px;
+    top: 30px;
+}
+
+.b2 {
+    width: 180px;
+    height: 90px;
+    right: 30px;
+    top: 30px;
+}
+
+.b3 {
+    width: 180px;
+    height: 90px;
+    left: 30px;
+    bottom: 30px;
+}
+
+.b4 {
+    width: 180px;
+    height: 90px;
+    right: 30px;
+    bottom: 30px;
+}
+
+.ap {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #22c55e;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px #22c55e;
+}
+
+.ap1 {
+    left: 110px;
+    top: 70px;
+}
+
+.ap2 {
+    right: 110px;
+    top: 70px;
+}
+
+.ap3 {
+    left: 110px;
+    bottom: 70px;
+}
+
+.ap4 {
+    right: 110px;
+    bottom: 70px;
+}
+
+/* BUTTON */
+
+button {
+    border: none;
+    background: #2563eb;
+    color: white;
+    padding: 11px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+/* CONFIGURATION */
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+}
+
+/* ALERT */
+
+.alert {
+    padding: 14px;
+    background: #fff7ed;
+    border-left: 5px solid #f97316;
+    margin-bottom: 10px;
+    border-radius: 6px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width: 900px) {
+
+    .sidebar {
+        width: 70px;
+    }
+
+    .logo {
+        font-size: 0;
+    }
+
+    .logo span {
+        font-size: 22px;
+    }
+
+    .menu li {
+        text-align: center;
+        font-size: 0;
+    }
+
+    .menu li::first-letter {
+        font-size: 20px;
+    }
+
+    .main {
+        margin-left: 70px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+    <div class="logo">
+        Smart<span>WiFi</span>
+    </div>
+
+    <ul class="menu">
+
+        <li onclick="scrollToSection('dashboard')">
+            📊 Dashboard
+        </li>
+
+        <li onclick="scrollToSection('aps')">
+            📡 Access Points
+        </li>
+
+        <li onclick="scrollToSection('map')">
+            🗺️ Campus Map
+        </li>
+
+        <li onclick="scrollToSection('optimization')">
+            ⚙️ Optimization
+        </li>
+
+        <li onclick="scrollToSection('configuration')">
+            🔧 Configuration
+        </li>
+
+        <li onclick="scrollToSection('alerts')">
+            🚨 Alerts
+        </li>
+
+    </ul>
+
+</div>
+
+
+<!-- MAIN -->
+
+<div class="main">
+
+
+<!-- HEADER -->
+
+<div class="header" id="dashboard">
+
+    <div>
+
+        <h1>
+            Smart Campus Wi-Fi 6
+        </h1>
+
+        <p>
+            802.11ax Network Performance Management
+        </p>
+
+    </div>
+
+    <div class="status">
+        ● Network Operational
+    </div>
+
+</div>
+
+
+<!-- KPI -->
+
+<div class="cards">
+
+    <div class="card">
+
+        <h3>
+            Connected Devices
+        </h3>
+
+        <div class="value blue">
+            <span id="users">301</span>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>
+            Average Throughput
+        </h3>
+
+        <div class="value green">
+            <span id="throughput">687</span> Mbps
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>
+            Average Latency
+        </h3>
+
+        <div class="value orange">
+            <span id="latency">30</span> ms
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>
+            Packet Loss
+        </h3>
+
+        <div class="value red">
+            <span id="packetloss">2.1</span> %
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>
+            Access Points
+        </h3>
+
+        <div class="value blue">
+            6
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- CHARTS -->
+
+<div class="grid">
+
+
+<div>
+
+<div class="panel">
+
+<h2>
+    Network Throughput
+</h2>
+
+<canvas id="throughputChart"></canvas>
+
+</div>
+
+
+<div class="panel">
+
+<h2>
+    Network Latency
+</h2>
+
+<canvas id="latencyChart"></canvas>
+
+</div>
+
+
+<!-- ACCESS POINTS -->
+
+<div class="panel" id="aps">
+
+<h2>
+    Access Point Monitoring
+</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>AP</th>
+<th>Location</th>
+<th>Band</th>
+<th>Users</th>
+<th>Signal</th>
+<th>Throughput</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="apTable">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- RIGHT SIDE -->
+
+<div>
+
+
+<!-- MAP -->
+
+<div class="panel" id="map">
+
+<h2>
+    Smart Campus Coverage
+</h2>
+
+<div class="campus">
+
+    <div class="building b1">
+        Main Block
+    </div>
+
+    <div class="building b2">
+        Computer Lab
+    </div>
+
+    <div class="building b3">
+        Library
+    </div>
+
+    <div class="building b4">
+        Seminar Hall
+    </div>
+
+    <div class="ap ap1"></div>
+    <div class="ap ap2"></div>
+    <div class="ap ap3"></div>
+    <div class="ap ap4"></div>
+
+</div>
+
+</div>
+
+
+<!-- OPTIMIZATION -->
+
+<div class="panel" id="optimization">
+
+<h2>
+    Network Optimization
+</h2>
+
+<p style="margin-bottom:15px">
+
+Analyze the network and generate
+Wi-Fi 6 optimization recommendations.
+
+</p>
+
+<button onclick="optimizeNetwork()">
+
+Run Optimization
+
+</button>
+
+<div id="optimizationResult"
+style="margin-top:15px">
+
+</div>
+
+</div>
+
+
+<!-- CONFIGURATION -->
+
+<div class="panel" id="configuration">
+
+<h2>
+    Wi-Fi 6 Configuration
+</h2>
+
+<div class="form-group">
+
+<label>
+SSID
+</label>
+
+<input
+id="ssid"
+value="SmartCampus-WiFi6">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+Channel Width
+</label>
+
+<select id="width">
+
+<option>20 MHz</option>
+<option>40 MHz</option>
+<option selected>80 MHz</option>
+<option>160 MHz</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+Transmit Power
+</label>
+
+<input
+id="power"
+type="number"
+value="20">
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+OFDMA
+</label>
+
+<select id="ofdma">
+
+<option selected>Enabled</option>
+<option>Disabled</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+MU-MIMO
+</label>
+
+<select id="mimo">
+
+<option selected>Enabled</option>
+<option>Disabled</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+Target Wake Time
+</label>
+
+<select id="twt">
+
+<option selected>Enabled</option>
+<option>Disabled</option>
+
+</select>
+
+</div>
+
+
+<button onclick="saveConfiguration()">
+
+Save Configuration
+
+</button>
+
+<p
+id="configMessage"
+style="margin-top:12px;color:#16a34a">
+
+</p>
+
+</div>
+
+
+<!-- ALERTS -->
+
+<div class="panel" id="alerts">
+
+<h2>
+    Network Alerts
+</h2>
+
+<div class="alert">
+
+⚠️ Seminar Hall AP has high latency
+(48 ms).
+
+</div>
+
+<div class="alert">
+
+⚠️ Hostel Block has high channel utilization.
+
+</div>
+
+<div class="alert">
+
+⚠️ AP-04 signal strength is below
+recommended level.
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+// ============================================================
+// SCROLL
+// ============================================================
+
+function scrollToSection(id) {
+
+    document.getElementById(id)
+    .scrollIntoView({
+        behavior: "smooth"
+    });
+
+}
+
+
+// ============================================================
+// LOAD ACCESS POINTS
+// ============================================================
+
+function loadAPs() {
+
+    fetch("/api/access-points")
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        let table = "";
+
+        data.forEach(ap => {
+
+            let statusClass =
+                ap.status === "Online"
+                ? "online"
+                : "warning";
+
+            table += `
+
+            <tr>
+
+                <td>${ap.name}</td>
+
+                <td>${ap.location}</td>
+
+                <td>${ap.band}</td>
+
+                <td>${ap.users}</td>
+
+                <td>${ap.signal} dBm</td>
+
+                <td>${ap.throughput} Mbps</td>
+
+                <td class="${statusClass}">
+                    ${ap.status}
+                </td>
+
+            </tr>
+
+            `;
+
+        });
+
+        document.getElementById("apTable")
+        .innerHTML = table;
+
+    });
+
+}
+
+
+// ============================================================
+// OPTIMIZATION
+// ============================================================
+
+function optimizeNetwork() {
+
+    fetch("/api/optimize", {
+        method: "POST"
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        let html = `
+
+        <div class="alert">
+
+        <b>Optimization Completed</b>
+
+        <br><br>
+
+        ${data.recommendations
+            .map(x => "• " + x)
+            .join("<br>")}
+
+        </div>
+
+        `;
+
+        document.getElementById(
+            "optimizationResult"
+        ).innerHTML = html;
+
+    });
+
+}
+
+
+// ============================================================
+// SAVE CONFIGURATION
+// ============================================================
+
+function saveConfiguration() {
+
+    let data = {
+
+        ssid:
+        document.getElementById("ssid").value,
+
+        width:
+        document.getElementById("width").value,
+
+        power:
+        document.getElementById("power").value,
+
+        ofdma:
+        document.getElementById("ofdma").value,
+
+        mimo:
+        document.getElementById("mimo").value,
+
+        twt:
+        document.getElementById("twt").value
+    };
+
+
+    fetch("/api/configuration", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type":
+            "application/json"
+        },
+
+        body: JSON.stringify(data)
+
+    })
+
+    .then(response => response.json())
+
+    .then(result => {
+
+        document.getElementById(
+            "configMessage"
+        ).innerText =
+        "✓ Wi-Fi 6 configuration saved successfully.";
+
+    });
+
+}
+
+
+// ============================================================
+// CHART DATA
+// ============================================================
+
+let throughputData =
+[450, 520, 580, 610, 650, 690, 720, 700, 760, 780];
+
+let latencyData =
+[42, 40, 38, 35, 34, 32, 31, 29, 27, 25];
+
+
+const labels = [
+    "10:00",
+    "10:05",
+    "10:10",
+    "10:15",
+    "10:20",
+    "10:25",
+    "10:30",
+    "10:35",
+    "10:40",
+    "10:45"
+];
+
+
+new Chart(
+    document.getElementById(
+        "throughputChart"
+    ),
+    {
+
+        type: "line",
+
+        data: {
+
+            labels: labels,
+
+            datasets: [{
+
+                label:
+                "Throughput (Mbps)",
+
+                data:
+                throughputData,
+
+                tension: 0.3,
+
+                fill: true
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            plugins: {
+
+                legend: {
+                    display: true
+                }
+
+            }
+
+        }
+
+    }
+);
+
+
+new Chart(
+    document.getElementById(
+        "latencyChart"
+    ),
+    {
+
+        type: "line",
+
+        data: {
+
+            labels: labels,
+
+            datasets: [{
+
+                label:
+                "Latency (ms)",
+
+                data:
+                latencyData,
+
+                tension: 0.3,
+
+                fill: true
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// SIMULATED LIVE NETWORK DATA
+// ============================================================
+
+function updateDashboard() {
+
+    let users =
+        290 +
+        Math.floor(
+            Math.random() * 35
+        );
+
+    let throughput =
+        650 +
+        Math.floor(
+            Math.random() * 100
+        );
+
+    let latency =
+        20 +
+        Math.floor(
+            Math.random() * 20
+        );
+
+    let packetLoss =
+        (1 + Math.random() * 2)
+        .toFixed(1);
+
+
+    document.getElementById(
+        "users"
+    ).innerText = users;
+
+
+    document.getElementById(
+        "throughput"
+    ).innerText = throughput;
+
+
+    document.getElementById(
+        "latency"
+    ).innerText = latency;
+
+
+    document.getElementById(
+        "packetloss"
+    ).innerText = packetLoss;
+
+}
+
+
+loadAPs();
+
+updateDashboard();
+
+setInterval(
+    updateDashboard,
+    5000
+);
+
+
+</script>
+
+</body>
+
+</html>
+"""
+
+
+# ============================================================
+# ROUTES
+# ============================================================
+
+@app.route("/")
+def home():
+
+    return render_template_string(HTML)
+
+
+# ============================================================
+# ACCESS POINT API
+# ============================================================
+
+@app.route("/api/access-points")
+def access_points():
+
+    conn = get_db()
+
+    rows = conn.execute(
+        "SELECT * FROM access_points"
+    ).fetchall()
+
+    conn.close()
+
+    return jsonify([
+        dict(row)
+        for row in rows
+    ])
+
+
+# ============================================================
+# OPTIMIZATION API
+# ============================================================
+
+@app.route("/api/optimize", methods=["POST"])
+def optimize():
+
+    conn = get_db()
+
+    aps = conn.execute(
+        "SELECT * FROM access_points"
+    ).fetchall()
+
+    recommendations = []
+
+    for ap in aps:
+
+        if ap["users"] > 65:
+
+            recommendations.append(
+                f"{ap['name']}: Reduce congestion using AP load balancing."
+            )
+
+        if ap["latency"] > 40:
+
+            recommendations.append(
+                f"{ap['name']}: High latency detected. "
+                "Recommend channel optimization."
+            )
+
+        if ap["signal"] < -60:
+
+            recommendations.append(
+                f"{ap['name']}: Weak signal detected. "
+                "Increase AP coverage or adjust transmit power."
+            )
+
+        if ap["packet_loss"] > 3:
+
+            recommendations.append(
+                f"{ap['name']}: Packet loss is high. "
+                "Investigate interference."
+            )
+
+
+    if not recommendations:
+
+        recommendations.append(
+            "Network performance is within recommended limits."
+        )
+
+
+    conn.close()
+
+    return jsonify({
+        "recommendations":
+        recommendations
+    })
+
+
+# ============================================================
+# CONFIGURATION API
+# ============================================================
+
+@app.route(
+    "/api/configuration",
+    methods=["POST"]
+)
+def configuration():
+
+    data = request.get_json()
+
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE configuration
+        SET ssid = ?,
+            channel_width = ?,
+            transmit_power = ?,
+            ofdma = ?,
+            mu_mimo = ?,
+            twt = ?
+        WHERE id = 1
+    """, (
+
+        data["ssid"],
+        data["width"],
+        data["power"],
+        data["ofdma"],
+        data["mimo"],
+        data["twt"]
+
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "success": True
+    })
+
+
+# ============================================================
+# RUN SERVER
+# ============================================================
+
+if __name__ == "__main__":
+
+    print("=" * 60)
+
+    print(
+        "SMART CAMPUS WI-FI 6 PERFORMANCE "
+        "OPTIMIZATION SYSTEM"
+    )
+
+    print("=" * 60)
+
+    print(
+        "Open your browser at:"
+    )
+
+    print(
+        "http://127.0.0.1:5000"
+    )
+
+    print("=" * 60)
+
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=True
+    )

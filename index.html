@@ -1,133 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SecureMed Pro | Cryptographic Medical Records</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#06141b;--panel:#102a34;--panel2:#0b2029;--line:#2b5662;--a:#55dfca;--muted:#a9c5cb;--danger:#ff7185}
-body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#061218,#0b2832,#061218);color:#f0fcfd;min-height:100vh}
-header{background:#091e26;border-bottom:1px solid var(--line);padding:16px 5%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-.logo{font-size:25px;font-weight:800;color:var(--a)}.logo span{color:#fff}
-nav button,.control{background:#203f49;border:0;color:#fff;border-radius:8px;padding:9px 13px;cursor:pointer;margin-left:5px}nav button:hover,.control:hover{background:#315d68}
-.container,.page{width:92%;max-width:1300px;margin:auto}.hero{text-align:center;padding:55px 20px 30px}.hero h1{font-size:44px}.hero h1 span{color:var(--a)}.hero p{max-width:900px;margin:14px auto;color:var(--muted);line-height:1.7}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:25px 0 45px}.card,.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px}.card{padding:24px;text-align:center}.card:hover{border-color:var(--a);transform:translateY(-3px)}.icon{font-size:42px;margin-bottom:10px}.card p,.muted{color:var(--muted);line-height:1.55}.btn{background:var(--a);color:#061416;border:0;border-radius:8px;padding:11px 17px;font-weight:700;cursor:pointer;margin-top:12px}
-.stat{padding:18px}.stat h4{color:var(--a)}.stat p{font-size:28px;font-weight:bold;margin-top:7px}
-.page{display:none;background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:25px;margin-top:30px;margin-bottom:50px}.page.active{display:block}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.title h2{color:var(--a)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.panel{padding:20px}.panel h3{color:var(--a);margin-bottom:13px}
-.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:7px}.field label{color:#c3dadd}.field input,.field select,.field textarea{background:#122e38;border:1px solid #3d6670;color:#fff;border-radius:8px;padding:11px}.field textarea{min-height:120px}.full{grid-column:1/-1}
-.table-wrap{overflow:auto;margin-top:18px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{padding:12px;border-bottom:1px solid #294b55;text-align:left}.table th{color:var(--a)}.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#1e514b;color:#a6f5e9;font-size:12px}
-.alert{padding:14px;background:#163943;border:1px solid #326b76;border-radius:9px;margin:12px 0;color:#d3eef1}.alert.danger{background:#44242d;border-color:#793c49}
-.crypto{font-family:Consolas,monospace;word-break:break-all;background:#07151c;border:1px solid #274953;border-radius:8px;padding:13px;color:#8deee0;font-size:12px;max-height:180px;overflow:auto}
-.progress{height:9px;background:#203c45;border-radius:9px;overflow:hidden;margin-top:8px}.progress div{height:100%;background:var(--a)}
-.login{min-height:100vh;display:flex;align-items:center;justify-content:center}.loginbox{width:min(450px,92%);padding:30px;background:var(--panel);border:1px solid var(--line);border-radius:18px}.loginbox h1{color:var(--a);text-align:center}.loginbox p{text-align:center}.loginbox .field{margin:14px 0}
-.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;z-index:30}.modal.show{display:flex}.modalbox{width:min(720px,94%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--a);border-radius:16px;padding:25px}
-footer{text-align:center;background:#061218;padding:25px;color:#829fa7}
-@media(max-width:1000px){.cards,.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
-@media(max-width:600px){nav{display:none}.cards,.grid,.form-grid{grid-template-columns:1fr}.hero h1{font-size:34px}}
-</style>
+
+<title>House Price Prediction</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 </head>
+
 <body>
 
-<div id="loginScreen" class="login">
-<div class="loginbox">
-<div style="font-size:52px;text-align:center">🔐</div>
-<h1>SecureMed Pro</h1><p class="muted">Cryptographic Medical Records Management</p>
-<div class="field"><label>Username</label><input id="u" value="admin"></div>
-<div class="field"><label>Password</label><input id="pw" type="password" value="admin123"></div>
-<div class="field"><label>Role</label><select id="role"><option>Administrator</option><option>Doctor</option><option>Patient</option></select></div>
-<button class="btn" style="width:100%" onclick="login()">🔐 Secure Login</button>
-<p class="muted" style="margin-top:12px;font-size:12px">Demo credentials: admin / admin123</p>
-</div></div>
-
-<div id="app" style="display:none">
-<header><div class="logo">🏥 SecureMed <span>Crypto</span></div>
-<nav><button onclick="home()">Dashboard</button><button onclick="openPage('patients')">Patients</button><button onclick="openPage('records')">Records</button><button onclick="openPage('crypto')">Cryptography</button><button onclick="openPage('audit')">Audit</button><button onclick="logout()">Logout</button></nav></header>
-
-<div id="home">
-<section class="hero"><h1>Secure Medical <span>Records</span></h1><p>Advanced browser demonstration combining AES-GCM encryption, PBKDF2 key derivation, SHA-256 integrity verification, digital-signature concepts and role-based access control.</p></section>
 <div class="container">
-<div class="grid">
-<div class="stat"><h4>Patients</h4><p id="countP">0</p></div><div class="stat"><h4>Encrypted Records</h4><p id="countR">0</p></div><div class="stat"><h4>Integrity</h4><p>SHA-256</p></div><div class="stat"><h4>Encryption</h4><p>AES-GCM</p></div>
-</div>
-<div class="cards">
-<div class="card"><div class="icon">👥</div><h2>Patients</h2><p>Manage patient profiles with access logging.</p><button class="btn" onclick="openPage('patients')">Open Patients</button></div>
-<div class="card"><div class="icon">🗂️</div><h2>Encrypted Records</h2><p>Encrypt clinical data before storing it in browser storage.</p><button class="btn" onclick="openPage('records')">Open Records</button></div>
-<div class="card"><div class="icon">🔑</div><h2>Cryptography</h2><p>Demonstrate key derivation, AES-GCM encryption and hashes.</p><button class="btn" onclick="openPage('crypto')">Crypto Lab</button></div>
-<div class="card"><div class="icon">🛡️</div><h2>Audit</h2><p>Track security-sensitive operations and access attempts.</p><button class="btn" onclick="openPage('audit')">Audit Trail</button></div>
-</div>
-<div class="two"><div class="panel"><h3>Security Architecture</h3><p class="muted" style="line-height:1.8">User authentication → PBKDF2 derives a cryptographic key → AES-256-GCM encrypts record content → SHA-256 fingerprint supports integrity checking → role-based authorization controls actions → audit events record access.</p></div><div class="panel"><h3>Security Status</h3><p class="muted">AES-GCM encryption</p><div class="progress"><div style="width:100%"></div></div><p class="muted" style="margin-top:12px">Integrity verification</p><div class="progress"><div style="width:100%"></div></div><p class="muted" style="margin-top:12px">Audit monitoring</p><div class="progress"><div style="width:95%"></div></div></div></div>
-</div></div>
 
-<section id="patients" class="page"><div class="title"><h2>👥 Patient Management</h2><button class="control" onclick="home()">← Dashboard</button></div>
-<input id="search" class="field input" style="width:100%;padding:12px;background:#122e38;border:1px solid #3d6670;color:#fff;border-radius:8px" placeholder="Search patients..." oninput="renderPatients()">
-<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Blood</th><th>Condition</th><th>Status</th><th>Action</th></tr></thead><tbody id="patientBody"></tbody></table></div>
-<button class="btn" onclick="show('patientModal')">＋ Register Patient</button></section>
+<h1>Regression Based House Price Prediction</h1>
 
-<section id="records" class="page"><div class="title"><h2>🗂️ Encrypted Medical Records</h2><button class="control" onclick="home()">← Dashboard</button></div>
-<div class="alert">Clinical record content is encrypted with AES-GCM before being placed into localStorage. A random 96-bit IV is generated for each encryption operation.</div>
-<div class="form-grid"><div class="field"><label>Patient</label><select id="recordPatient"></select></div><div class="field"><label>Record Type</label><select id="rtype"><option>Diagnosis</option><option>Prescription</option><option>Lab Report</option><option>Consultation Note</option></select></div><div class="field full"><label>Medical Record</label><textarea id="recordText" placeholder="Enter demo clinical information..."></textarea></div></div>
-<button class="btn" onclick="encryptAndStore()">🔒 Encrypt & Store Record</button>
-<div class="table-wrap"><table class="table"><thead><tr><th>Record ID</th><th>Patient</th><th>Type</th><th>Algorithm</th><th>Integrity</th><th>Action</th></tr></thead><tbody id="recordBody"></tbody></table></div></section>
+<form action="/predict" method="post">
 
-<section id="crypto" class="page"><div class="title"><h2>🔑 Cryptography Laboratory</h2><button class="control" onclick="home()">← Dashboard</button></div>
-<div class="two">
-<div class="panel"><h3>1. PBKDF2 Key Derivation</h3><p class="muted">A password is transformed into a cryptographic key using PBKDF2 with SHA-256 and a random salt.</p><button class="btn" onclick="demoKey()">Generate Key</button><div id="keyOut" class="crypto" style="margin-top:12px">No key generated.</div></div>
-<div class="panel"><h3>2. AES-256-GCM Encryption</h3><p class="muted">Authenticated encryption protects confidentiality and detects unauthorized ciphertext modification.</p><button class="btn" onclick="demoAES()">Run AES-GCM Demo</button><div id="aesOut" class="crypto" style="margin-top:12px">No encryption performed.</div></div>
-<div class="panel"><h3>3. SHA-256 Integrity</h3><p class="muted">A SHA-256 digest acts as a fingerprint of the record. Any changed input produces a different digest.</p><input id="hashText" style="width:100%;margin:8px 0;padding:10px;background:#122e38;color:#fff;border:1px solid #3d6670;border-radius:7px" value="Medical record integrity test"><button class="btn" onclick="demoHash()">Calculate SHA-256</button><div id="hashOut" class="crypto" style="margin-top:12px">No hash calculated.</div></div>
-<div class="panel"><h3>4. Digital Signature Concept</h3><p class="muted">A production system can use ECDSA/Ed25519 signatures to authenticate the source of a record and detect tampering.</p><button class="btn" onclick="demoSignature()">Generate ECDSA Signature</button><div id="sigOut" class="crypto" style="margin-top:12px">No signature generated.</div></div>
-</div></section>
+<label>Enter House Size (sqft)</label>
 
-<section id="audit" class="page"><div class="title"><h2>🛡️ Security Audit Trail</h2><button class="control" onclick="home()">← Dashboard</button></div>
-<div class="alert">Audit records capture login, record encryption, decryption, patient access and security operations.</div>
-<div class="table-wrap"><table class="table"><thead><tr><th>Time</th><th>User</th><th>Operation</th><th>Security Result</th></tr></thead><tbody id="auditBody"></tbody></table></div></section>
+<input type="number" name="size" placeholder="Example: 1500" required>
 
-<div class="container" style="margin-bottom:35px"><div class="panel"><h3>Recent Security Activity</h3><div id="recent" style="margin-top:10px"></div></div></div><footer>SecureMed Pro © 2026 | AES-GCM + PBKDF2 + SHA-256 + ECDSA | Academic Demonstration</footer>
+<button type="submit">Predict Price</button>
+
+</form>
+
+<h2>{{ prediction_text }}</h2>
+<h3>{{ mse }}</h3>
+<h3>{{ r2 }}</h3>
+
 </div>
 
-<div id="patientModal" class="modal"><div class="modalbox"><div class="title"><h2>Register Patient</h2><button class="control" onclick="hide('patientModal')">✕</button></div><div class="form-grid">
-<div class="field"><label>Name</label><input id="pn"></div><div class="field"><label>Age</label><input id="pa" type="number"></div><div class="field"><label>Blood Group</label><select id="pb"><option>A+</option><option>B+</option><option>O+</option><option>AB+</option><option>A-</option><option>B-</option><option>O-</option></select></div><div class="field"><label>Condition</label><input id="pc"></div></div><button class="btn" onclick="addPatient()">Save</button></div></div>
-
-<script>
-const enc=new TextEncoder(),dec=new TextDecoder();
-let patients=JSON.parse(localStorage.getItem("smc_patients")||"null")||[
-{id:"MR-1001",name:"Arun Kumar",age:42,blood:"O+",condition:"Hypertension",status:"Active"},
-{id:"MR-1002",name:"Priya Sharma",age:35,blood:"B+",condition:"Diabetes",status:"Active"},
-{id:"MR-1003",name:"Rahul Das",age:28,blood:"A+",condition:"Routine Checkup",status:"Stable"}
-];
-let records=JSON.parse(localStorage.getItem("smc_records")||"[]");
-let audit=JSON.parse(localStorage.getItem("smc_audit")||"[]");
-let currentRole="Administrator";
-
-function b64(a){return btoa(String.fromCharCode(...new Uint8Array(a)))}
-function ub64(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
-function hex(a){return [...new Uint8Array(a)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-async function derive(password,salt){let base=await crypto.subtle.importKey("raw",enc.encode(password),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:100000,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
-async function encrypt(text,password){let salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));let key=await derive(password,salt);let cipher=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,enc.encode(text));let hash=await crypto.subtle.digest("SHA-256",enc.encode(text));return {salt:b64(salt),iv:b64(iv),cipher:b64(cipher),hash:hex(hash)}}
-async function decrypt(r,password){let key=await derive(password,ub64(r.salt));let plain=await crypto.subtle.decrypt({name:"AES-GCM",iv:ub64(r.iv)},key,ub64(r.cipher));return dec.decode(plain)}
-async function sha(text){return hex(await crypto.subtle.digest("SHA-256",enc.encode(text)))}
-
-function login(){let u=document.getElementById("u").value,p=document.getElementById("pw").value;if(!u||!p)return alert("Enter login details.");currentRole=document.getElementById("role").value;document.getElementById("loginScreen").style.display="none";document.getElementById("app").style.display="block";log(u,"Login as "+currentRole,"Allowed");refresh()}
-function logout(){log(currentRole,"Logout","Allowed");location.reload()}
-function home(){document.getElementById("home").style.display="block";document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));refresh()}
-function openPage(id){document.getElementById("home").style.display="none";document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");if(id==="patients")renderPatients();if(id==="records"){populateRecordPatients();renderRecords()}if(id==="audit")renderAudit();log(currentRole,"Opened "+id,"Allowed")}
-function show(id){document.getElementById(id).classList.add("show")}function hide(id){document.getElementById(id).classList.remove("show")}
-function refresh(){document.getElementById("countP").textContent=patients.length;document.getElementById("countR").textContent=records.length;renderRecent()}
-function renderPatients(){let q=(document.getElementById("search")?.value||"").toLowerCase();let rows=patients.filter(p=>Object.values(p).join(" ").toLowerCase().includes(q));document.getElementById("patientBody").innerHTML=rows.map(p=>`<tr><td>${p.id}</td><td>${p.name}</td><td>${p.age}</td><td>${p.blood}</td><td>${p.condition}</td><td><span class="badge">${p.status}</span></td><td><button class="control" onclick="viewPatient('${p.id}')">View</button></td></tr>`).join("")}
-function viewPatient(id){let p=patients.find(x=>x.id===id);alert(`PATIENT PROFILE\n\n${p.id}\n${p.name}\nAge: ${p.age}\nBlood: ${p.blood}\nCondition: ${p.condition}\nStatus: ${p.status}`);log(currentRole,"Viewed "+id,"Allowed")}
-function addPatient(){let name=document.getElementById("pn").value.trim();if(!name)return alert("Enter patient name.");let p={id:"MR-"+(1001+patients.length),name,age:document.getElementById("pa").value||0,blood:document.getElementById("pb").value,condition:document.getElementById("pc").value||"Not specified",status:"Active"};patients.push(p);localStorage.setItem("smc_patients",JSON.stringify(patients));log(currentRole,"Registered "+p.id,"Allowed");hide("patientModal");renderPatients();refresh()}
-function populateRecordPatients(){document.getElementById("recordPatient").innerHTML=patients.map(p=>`<option value="${p.id}">${p.name} (${p.id})</option>`).join("")}
-async function encryptAndStore(){let patient=document.getElementById("recordPatient").value,text=document.getElementById("recordText").value.trim(),type=document.getElementById("rtype").value;if(!text)return alert("Enter demo medical record text.");let password=prompt("Enter encryption passphrase for this demo record:");if(!password)return;let e=await encrypt(text,password);let r={id:"ENC-"+Date.now(),patient,type,algorithm:"AES-256-GCM",...e,created:new Date().toLocaleString()};records.unshift(r);localStorage.setItem("smc_records",JSON.stringify(records));document.getElementById("recordText").value="";renderRecords();refresh();log(currentRole,"Encrypted and stored "+r.id,"Allowed");alert("Record encrypted successfully.\\n\\nAES-256-GCM + PBKDF2 + SHA-256 fingerprint created.")}
-function renderRecords(){document.getElementById("recordBody").innerHTML=records.map(r=>`<tr><td>${r.id}</td><td>${r.patient}</td><td>${r.type}</td><td>${r.algorithm}</td><td><span class="badge">SHA-256</span></td><td><button class="control" onclick="decryptRecord('${r.id}')">🔓 Decrypt</button></td></tr>`).join("")||'<tr><td colspan="6">No encrypted records.</td></tr>'}
-async function decryptRecord(id){let r=records.find(x=>x.id===id),password=prompt("Enter encryption passphrase:");if(!password)return;try{let text=await decrypt(r,password),hash=await sha(text);let ok=hash===r.hash;log(currentRole,"Decrypted "+id,ok?"Integrity verified":"Integrity FAILED");alert(`DECRYPTED RECORD\\n\\nPatient: ${r.patient}\\nType: ${r.type}\\n\\n${text}\\n\\nIntegrity: ${ok?"VERIFIED ✓":"FAILED ✗"}\\nSHA-256: ${hash}`)}catch(e){log(currentRole,"Failed decryption "+id,"Denied");alert("Decryption failed. Wrong passphrase or modified ciphertext.")}}
-async function demoKey(){let salt=crypto.getRandomValues(new Uint8Array(16));let key=await derive("DemoMedicalPassword",salt);let raw=await crypto.subtle.exportKey("raw",key);document.getElementById("keyOut").textContent="Salt: "+b64(salt)+"\nDerived AES-256 key: "+b64(raw)+"\nIterations: 100000\nHash: SHA-256"}
-async function demoAES(){let e=await encrypt("Confidential medical record: demo only.","DemoMedicalPassword");document.getElementById("aesOut").textContent="Salt: "+e.salt+"\nIV: "+e.iv+"\nCiphertext: "+e.cipher+"\nSHA-256: "+e.hash}
-async function demoHash(){document.getElementById("hashOut").textContent=await sha(document.getElementById("hashText").value)}
-async function demoSignature(){let kp=await crypto.subtle.generateKey({name:"ECDSA",namedCurve:"P-256"},true,["sign","verify"]);let data=enc.encode("Medical record signed by authorized doctor");let sig=await crypto.subtle.sign({name:"ECDSA",hash:"SHA-256"},kp.privateKey,data);let pub=await crypto.subtle.exportKey("jwk",kp.publicKey);document.getElementById("sigOut").textContent="Algorithm: ECDSA P-256 + SHA-256\nSignature: "+b64(sig)+"\nPublic JWK: "+JSON.stringify(pub)}
-function log(user,operation,result){audit.unshift({time:new Date().toLocaleString(),user,operation,result});audit=audit.slice(0,50);localStorage.setItem("smc_audit",JSON.stringify(audit));renderAudit();renderRecent()}
-function renderAudit(){let b=document.getElementById("auditBody");if(!b)return;b.innerHTML=audit.map(a=>`<tr><td>${a.time}</td><td>${a.user}</td><td>${a.operation}</td><td><span class="badge">${a.result}</span></td></tr>`).join("")||'<tr><td colspan="4">No events.</td></tr>'}
-function renderRecent(){let d=document.getElementById("recent");if(!d)return;d.innerHTML=audit.slice(0,5).map(a=>`<p style="padding:7px 0;border-bottom:1px solid #294b55"><span class="muted">${a.time}</span><br>${a.operation}</p>`).join("")}
-</script>
 </body>
 </html>

@@ -1,0 +1,10 @@
+JOB_ID,JOB_TITLE,MIN_SALARY,MAX_SALARY
+AD_PRES,President,20080,40000
+AD_VP,Administration Vice President,15000,30000
+AD_ASST,Administration Assistant,3000,6000
+FI_MGR,Finance Manager,8200,16000
+FI_ACCOUNT,Accountant,4200,9000
+AC_MGR,Accounting Manager,8200,16000
+AC_ACCOUNT,Public Accountant,4200,9000
+SA_MAN,Sales Manager,10000,20080
+SA_REP,Sales Representative,6000,12008
