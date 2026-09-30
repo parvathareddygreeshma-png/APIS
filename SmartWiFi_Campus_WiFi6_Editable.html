@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SmartWiFi Campus | Wi-Fi 6 Network Management</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7f7;color:#183334}
+header{background:#073b3a;color:white;padding:18px 28px;position:sticky;top:0;z-index:10;box-shadow:0 3px 12px #0002}
+.header{display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-size:24px;font-weight:800}.brand small{display:block;font-size:12px;color:#a9d8d5;font-weight:500;margin-top:3px}
+nav{display:flex;gap:7px;flex-wrap:wrap}nav button{border:0;background:#145b59;color:white;padding:10px 13px;border-radius:7px;cursor:pointer}nav button:hover,nav button.active{background:#20a39e}
+main{max-width:1400px;margin:auto;padding:25px}.page{display:none}.page.active{display:block}
+h1{margin:0 0 8px;font-size:30px}h2{margin-top:0}.sub{color:#617273;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card,.panel{background:white;border-radius:12px;padding:20px;box-shadow:0 2px 10px #18333412;border:1px solid #dce7e6}.card b{font-size:28px;display:block;margin-top:7px}.label{color:#647778;font-size:13px}
+.panel{margin-top:18px}.panel h3{margin-top:0;border-bottom:1px solid #e1e9e8;padding-bottom:12px}
+.ok{color:#16835e}.warn{color:#bd7a00}.bad{color:#c43d3d}
+table{width:100%;border-collapse:collapse}th,td{padding:12px 10px;border-bottom:1px solid #e5eceb;text-align:left;font-size:14px}th{background:#f0f5f4}
+.btn{border:0;border-radius:7px;padding:9px 13px;cursor:pointer;background:#126866;color:#fff;margin:3px}.btn.secondary{background:#e8efee;color:#183334}.btn.danger{background:#c94b4b}.btn.green{background:#208b68}
+input,select{width:100%;padding:10px;border:1px solid #cbd8d7;border-radius:7px;background:white}.form{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.field label{font-size:12px;color:#647778;display:block;margin-bottom:5px;font-weight:700}
+.toggle{display:flex;align-items:center;gap:9px;margin:10px 0}.toggle input{width:auto}
+.topology{position:relative;min-height:520px;background:linear-gradient(#eef8f7,#fff);border-radius:12px;border:2px dashed #b9d7d5;overflow:hidden}
+.node{position:absolute;width:135px;text-align:center;background:#fff;border:2px solid #1a817d;border-radius:10px;padding:10px;box-shadow:0 4px 12px #0001;cursor:pointer}.node:hover{transform:scale(1.03)}.node .ico{font-size:25px}.node small{display:block;color:#687b7b;margin-top:4px}.node.router{left:43%;top:25px;border-color:#073b3a}.node.switch{top:160px}.node.sw1{left:25%}.node.sw2{left:61%}.node.server{top:310px}.s1{left:6%}.s2{left:39%}.s3{left:72%}.client{top:430px}.c1{left:3%}.c2{left:17%}.c3{left:31%}.c4{left:45%}.c5{left:59%}.c6{left:73%}.c7{left:87%}
+.line{position:absolute;height:2px;background:#5a9693;transform-origin:left center}.l1{left:50%;top:115px;width:155px;transform:rotate(145deg)}.l2{left:50%;top:115px;width:155px;transform:rotate(35deg)}.l3{left:31%;top:250px;width:120px;transform:rotate(30deg)}.l4{left:69%;top:250px;width:120px;transform:rotate(150deg)}
+.chartbox{height:310px}.alert{padding:12px;border-left:5px solid #d49a28;background:#fff8e8;margin:9px 0;border-radius:6px}.success{padding:12px;border-left:5px solid #208b68;background:#edf9f4;margin:9px 0;border-radius:6px}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;align-items:center;justify-content:center}.modalbox{background:white;width:min(650px,94%);border-radius:12px;padding:22px;max-height:90vh;overflow:auto}
+.footer{text-align:center;color:#738484;padding:25px}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#e3f2ef;color:#14635f;font-size:12px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.grid2,.form{grid-template-columns:1fr}.node{position:relative!important;left:auto!important;top:auto!important;margin:10px auto}.topology{padding:15px}.line{display:none}}
+</style>
+</head>
+<body>
+<header><div class="header"><div class="brand">📡 SmartWiFi Campus <small>Wi-Fi 6 Configuration, Optimization & Performance Enhancement</small></div>
+<nav>
+<button class="active" onclick="show('dashboard',this)">Dashboard</button><button onclick="show('config',this)">Wi-Fi 6 Config</button><button onclick="show('topology',this)">Topology</button><button onclick="show('devices',this)">Devices</button><button onclick="show('monitor',this)">Monitoring</button><button onclick="show('analytics',this)">Analytics</button><button onclick="show('optimize',this)">Optimization</button><button onclick="show('settings',this)">Settings</button>
+</nav></div></header>
+
+<main>
+<section id="dashboard" class="page active"><h1>Network Dashboard</h1><div class="sub">Smart campus wireless network overview and real-time configuration.</div>
+<div class="grid">
+<div class="card"><span class="label">Total Network Devices</span><b id="total">19</b><span class="pill">Configured</span></div>
+<div class="card"><span class="label">Connected Clients</span><b id="clients">13</b><span class="pill">Active</span></div>
+<div class="card"><span class="label">Wi-Fi 6 Clients</span><b id="wireless">9</b><span class="pill">802.11ax</span></div>
+<div class="card"><span class="label">Network Health</span><b class="ok" id="health">94%</b><span class="pill">Excellent</span></div>
+</div>
+<div class="grid2"><div class="panel"><h3>Current Wi-Fi 6 Profile</h3><table><tr><td>SSID</td><td id="dssid">SmartWiFi-Campus</td></tr><tr><td>Band</td><td id="dband">5 GHz</td></tr><tr><td>Channel</td><td id="dchannel">36</td></tr><tr><td>Channel Width</td><td id="dwidth">80 MHz</td></tr><tr><td>OFDMA</td><td class="ok">Enabled</td></tr><tr><td>MU-MIMO</td><td class="ok">Enabled</td></tr></table></div>
+<div class="panel"><h3>System Alerts</h3><div class="success">✓ Wi-Fi 6 optimization is active.</div><div class="alert">⚠ High-density areas should use OFDMA and BSS Coloring.</div><div class="success">✓ All core infrastructure devices are online.</div></div></div>
+</section>
+
+<section id="config" class="page"><h1>Wi-Fi 6 Configuration</h1><div class="sub">Edit wireless parameters and apply them to the simulated campus network.</div>
+<div class="panel"><h3>Wireless Configuration</h3><div class="form">
+<div class="field"><label>SSID</label><input id="ssid" value="SmartWiFi-Campus"></div>
+<div class="field"><label>Band</label><select id="band"><option>2.4 GHz</option><option selected>5 GHz</option><option>6 GHz</option></select></div>
+<div class="field"><label>Channel</label><select id="channel"><option>1</option><option>6</option><option>11</option><option selected>36</option><option>40</option><option>44</option><option>48</option><option>149</option></select></div>
+<div class="field"><label>Channel Width</label><select id="width"><option>20 MHz</option><option>40 MHz</option><option selected>80 MHz</option><option>160 MHz</option></select></div>
+<div class="field"><label>Transmit Power</label><select id="power"><option>Low</option><option>Medium</option><option selected>High</option></select></div>
+<div class="field"><label>BSS Coloring</label><select id="bss"><option selected>Enabled</option><option>Disabled</option></select></div></div>
+<div class="toggle"><input type="checkbox" id="ofdma" checked><label>Enable OFDMA</label></div><div class="toggle"><input type="checkbox" id="mimo" checked><label>Enable MU-MIMO</label></div><div class="toggle"><input type="checkbox" id="twt" checked><label>Enable Target Wake Time (TWT)</label></div><div class="toggle"><input type="checkbox" id="sr" checked><label>Enable Spatial Reuse</label></div>
+<button class="btn green" onclick="applyConfig()">✓ Apply Configuration</button><button class="btn secondary" onclick="saveConfig()">💾 Save Profile</button></div>
+</section>
+
+<section id="topology" class="page"><h1>Campus Network Topology</h1><div class="sub">Cisco Packet Tracer-inspired editable topology view. Click a device to edit it.</div>
+<div class="panel"><div class="topology" id="topo">
+<div class="line l1"></div><div class="line l2"></div><div class="line l3"></div><div class="line l4"></div>
+<div class="node router" onclick="editByName('Wireless Router0')"><div class="ico">📡</div><b>Wireless Router0</b><small>Gateway / Wi-Fi 6</small></div>
+<div class="node switch sw1" onclick="editByName('Switch0')"><div class="ico">🔀</div><b>Switch0</b><small>2960 Switch</small></div>
+<div class="node switch sw2" onclick="editByName('Switch1')"><div class="ico">🔀</div><b>Switch1</b><small>2960 Switch</small></div>
+<div class="node server s1" onclick="editByName('Server0')"><div class="ico">🖥️</div><b>Server0</b><small>DHCP / DNS</small></div>
+<div class="node server s2" onclick="editByName('Server1')"><div class="ico">🖥️</div><b>Server1</b><small>Application</small></div>
+<div class="node server s3" onclick="editByName('Server2')"><div class="ico">🖥️</div><b>Server2</b><small>Database</small></div>
+</div></div></section>
+
+<section id="devices" class="page"><h1>Editable Device Inventory</h1><div class="sub">Add, edit or remove devices. Dashboard counts update automatically.</div>
+<div class="panel"><button class="btn green" onclick="openAdd()">＋ Add Device</button><button class="btn secondary" onclick="exportData()">⬇ Export JSON</button><button class="btn secondary" onclick="document.getElementById('importFile').click()">⬆ Import JSON</button><input id="importFile" type="file" accept=".json" style="display:none" onchange="importData(event)">
+<table><thead><tr><th>Name</th><th>Type</th><th>Connection</th><th>IP Address</th><th>Status</th><th>Actions</th></tr></thead><tbody id="deviceTable"></tbody></table></div></section>
+
+<section id="monitor" class="page"><h1>Live Network Monitoring</h1><div class="sub">Simulated performance telemetry for the campus Wi-Fi 6 network.</div>
+<div class="grid"><div class="card"><span class="label">Throughput</span><b id="throughput">842 Mbps</b></div><div class="card"><span class="label">Average Latency</span><b id="latency">18 ms</b></div><div class="card"><span class="label">Packet Loss</span><b id="loss">0.8%</b></div><div class="card"><span class="label">Channel Utilization</span><b id="util">47%</b></div></div>
+<div class="panel chartbox"><canvas id="liveChart"></canvas></div></section>
+
+<section id="analytics" class="page"><h1>Performance Analytics</h1><div class="sub">Compare network behavior before and after Wi-Fi 6 optimization.</div>
+<div class="grid2"><div class="panel chartbox"><canvas id="perfChart"></canvas></div><div class="panel"><h3>Performance Summary</h3><table><tr><td>Throughput improvement</td><td class="ok">+31%</td></tr><tr><td>Latency reduction</td><td class="ok">−42%</td></tr><tr><td>Packet loss reduction</td><td class="ok">−65%</td></tr><tr><td>Coverage improvement</td><td class="ok">+24%</td></tr></table></div></div></section>
+
+<section id="optimize" class="page"><h1>Network Optimization</h1><div class="sub">Rule-based optimization recommendations for a high-density smart campus.</div>
+<div class="panel"><h3>Optimization Engine</h3><div id="recs"></div><button class="btn green" onclick="runOptimization()">⚡ Run Optimization</button></div>
+<div class="panel"><h3>Recommended Wi-Fi 6 Techniques</h3><table><tr><th>Technique</th><th>Purpose</th><th>Status</th></tr><tr><td>OFDMA</td><td>Efficient multi-user resource allocation</td><td class="ok">Enabled</td></tr><tr><td>MU-MIMO</td><td>Parallel communication with multiple clients</td><td class="ok">Enabled</td></tr><tr><td>BSS Coloring</td><td>Reduce co-channel interference</td><td class="ok">Enabled</td></tr><tr><td>TWT</td><td>Improve IoT client power efficiency</td><td class="ok">Enabled</td></tr><tr><td>Spatial Reuse</td><td>Increase network capacity</td><td class="ok">Enabled</td></tr></table></div></section>
+
+<section id="settings" class="page"><h1>Project Settings</h1><div class="sub">Edit project information and manage browser-stored configuration.</div>
+<div class="panel"><div class="form"><div class="field"><label>Project Name</label><input id="project" value="SmartWiFi Campus"></div><div class="field"><label>Campus</label><input id="campus" value="Smart Campus Network"></div><div class="field"><label>Administrator</label><input id="admin" value="Network Administrator"></div></div><br><button class="btn green" onclick="saveSettings()">Save Settings</button><button class="btn danger" onclick="resetAll()">Reset Everything</button></div>
+<div class="panel"><h3>Report</h3><p>Generate a printable project summary containing configuration, topology and device inventory.</p><button class="btn" onclick="window.print()">🖨 Print Report</button></div></section>
+<div class="footer">SmartWiFi Campus • Wi-Fi 6 (802.11ax) Network Management System</div>
+</main>
+
+<div class="modal" id="modal"><div class="modalbox"><h2 id="modalTitle">Add Device</h2><div class="form">
+<div class="field"><label>Name</label><input id="mname"></div><div class="field"><label>Type</label><select id="mtype"><option>PC</option><option>Laptop</option><option>Smartphone</option><option>Tablet</option><option>Server</option><option>Switch</option><option>Wireless Router</option><option>Access Point</option></select></div><div class="field"><label>Connection</label><select id="mconn"><option>Ethernet</option><option>Wi-Fi 6</option><option>Wi-Fi</option></select></div><div class="field"><label>IP Address</label><input id="mip"></div><div class="field"><label>Status</label><select id="mstatus"><option>Online</option><option>Offline</option><option>Maintenance</option></select></div></div><br><button class="btn green" onclick="saveDevice()">Save</button><button class="btn secondary" onclick="closeModal()">Cancel</button></div></div>
+
+<script>
+const defaults=[
+['Wireless Router0','Wireless Router','Wi-Fi 6','192.168.1.1','Online'],['Switch0','Switch','Ethernet','192.168.1.2','Online'],['Switch1','Switch','Ethernet','192.168.1.3','Online'],
+['Server0','Server','Ethernet','192.168.1.10','Online'],['Server1','Server','Ethernet','192.168.1.11','Online'],['Server2','Server','Ethernet','192.168.1.12','Online'],
+['PC0','PC','Ethernet','192.168.1.20','Online'],['PC1','PC','Ethernet','192.168.1.21','Online'],['PC2','PC','Ethernet','192.168.1.22','Online'],['PC3','PC','Ethernet','192.168.1.23','Online'],
+['Laptop0','Laptop','Wi-Fi 6','192.168.1.30','Online'],['Laptop1','Laptop','Wi-Fi 6','192.168.1.31','Online'],['Laptop2','Laptop','Wi-Fi 6','192.168.1.32','Online'],['Laptop3','Laptop','Wi-Fi 6','192.168.1.33','Online'],
+['Smartphone0','Smartphone','Wi-Fi 6','192.168.1.40','Online'],['Smartphone1','Smartphone','Wi-Fi 6','192.168.1.41','Online'],['Smartphone2','Smartphone','Wi-Fi 6','192.168.1.42','Online'],
+['TabletPC0','Tablet','Wi-Fi 6','192.168.1.50','Online'],['TabletPC1','Tablet','Wi-Fi 6','192.168.1.51','Online']
+];
+let devices=JSON.parse(localStorage.getItem('smartwifi_devices')||'null')||defaults.map(x=>({name:x[0],type:x[1],connection:x[2],ip:x[3],status:x[4]}));
+let editIndex=-1;
+function save(){localStorage.setItem('smartwifi_devices',JSON.stringify(devices));render();}
+function render(){
+ const clients=devices.filter(d=>['PC','Laptop','Smartphone','Tablet'].includes(d.type));
+ const wireless=devices.filter(d=>d.connection==='Wi-Fi 6');
+ document.getElementById('total').textContent=devices.length;
+ document.getElementById('clients').textContent=clients.length;
+ document.getElementById('wireless').textContent=wireless.length;
+ document.getElementById('deviceTable').innerHTML=devices.map((d,i)=>`<tr><td><b>${d.name}</b></td><td>${d.type}</td><td>${d.connection}</td><td>${d.ip}</td><td class="${d.status==='Online'?'ok':d.status==='Maintenance'?'warn':'bad'}">${d.status}</td><td><button class="btn" onclick="editDevice(${i})">Edit</button><button class="btn danger" onclick="delDevice(${i})">Delete</button></td></tr>`).join('');
+ document.getElementById('clients').textContent=clients.length;
+}
+function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(id==='monitor')startLive();if(id==='analytics')charts();}
+function openAdd(){editIndex=-1;document.getElementById('modalTitle').textContent='Add Device';['mname','mip'].forEach(x=>document.getElementById(x).value='');document.getElementById('modal').style.display='flex'}
+function editDevice(i){editIndex=i;let d=devices[i];document.getElementById('modalTitle').textContent='Edit Device';mname.value=d.name;mtype.value=d.type;mconn.value=d.connection;mip.value=d.ip;mstatus.value=d.status;document.getElementById('modal').style.display='flex'}
+function editByName(n){let i=devices.findIndex(d=>d.name===n);if(i>=0){show('devices',document.querySelectorAll('nav button')[3]);editDevice(i)}}
+function closeModal(){document.getElementById('modal').style.display='none'}
+function saveDevice(){let d={name:mname.value.trim()||'New Device',type:mtype.value,connection:mconn.value,ip:mip.value.trim()||'192.168.1.x',status:mstatus.value};if(editIndex<0)devices.push(d);else devices[editIndex]=d;save();closeModal()}
+function delDevice(i){if(confirm('Delete '+devices[i].name+'?')){devices.splice(i,1);save()}}
+function applyConfig(){dssid.textContent=ssid.value;dband.textContent=band.value;dchannel.textContent=channel.value;dwidth.textContent=width.value;alert('Wi-Fi 6 configuration applied successfully.')}
+function saveConfig(){localStorage.setItem('smartwifi_config',JSON.stringify({ssid:ssid.value,band:band.value,channel:channel.value,width:width.value,power:power.value,bss:bss.value,ofdma:ofdma.checked,mimo:mimo.checked,twt:twt.checked,sr:sr.checked}));applyConfig()}
+function saveSettings(){localStorage.setItem('smartwifi_settings',JSON.stringify({project:project.value,campus:campus.value,admin:admin.value}));alert('Project settings saved.')}
+function resetAll(){if(confirm('Reset all editable data to default?')){localStorage.clear();location.reload()}}
+function exportData(){let blob=new Blob([JSON.stringify(devices,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='smartwifi_devices.json';a.click()}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(Array.isArray(x)){devices=x;save();alert('Devices imported successfully')}}catch{alert('Invalid JSON file')}};r.readAsText(f)}
+let liveChart,perfChart;
+function startLive(){let c=document.getElementById('liveChart');if(liveChart)liveChart.destroy();let labels=[1,2,3,4,5,6,7,8,9,10];liveChart=new Chart(c,{type:'line',data:{labels,datasets:[{label:'Throughput (Mbps)',data:[620,680,710,750,730,790,810,835,820,842],tension:.35},{label:'Latency (ms)',data:[31,29,28,25,26,23,22,20,19,18],tension:.35}]},options:{responsive:true,maintainAspectRatio:false}})}
+function charts(){let c=document.getElementById('perfChart');if(perfChart)perfChart.destroy();perfChart=new Chart(c,{type:'bar',data:{labels:['Throughput','Latency','Packet Loss','Coverage'],datasets:[{label:'Before Optimization',data:[610,31,2.3,68]},{label:'After Optimization',data:[842,18,.8,84]}]},options:{responsive:true,maintainAspectRatio:false}})}
+function runOptimization(){let n=devices.filter(d=>d.connection==='Wi-Fi 6').length;document.getElementById('recs').innerHTML=`<div class="success">✓ Optimization completed for ${n} Wi-Fi 6 clients.</div><div class="success">✓ OFDMA scheduling recommended for dense client groups.</div><div class="success">✓ BSS Coloring and Spatial Reuse should remain enabled.</div><div class="alert">⚠ Monitor channels with utilization above 70%.</div>`}
+render();runOptimization();
+const cfg=JSON.parse(localStorage.getItem('smartwifi_config')||'null');if(cfg){ssid.value=cfg.ssid||ssid.value;band.value=cfg.band||band.value;channel.value=cfg.channel||channel.value;width.value=cfg.width||width.value;power.value=cfg.power||power.value;bss.value=cfg.bss||bss.value;ofdma.checked=cfg.ofdma;mimo.checked=cfg.mimo;twt.checked=cfg.twt;sr.checked=cfg.sr;applyConfig()}
+</script>
+</body></html>
